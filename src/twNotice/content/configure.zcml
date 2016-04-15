@@ -1,0 +1,49 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    i18n_domain="twNotice.content">
+
+  <i18n:registerTranslations directory="locales" />
+
+  <includeDependencies package="." />
+
+  <include package=".browser" />
+
+
+  <genericsetup:registerProfile
+      name="default"
+      title="twNotice.content"
+      directory="profiles/default"
+      description="Installs the twNotice.content add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:importStep
+      name="twNotice.content-postInstall"
+      title="twNotice.content post_install import step"
+      description="Post install import step from twNotice.content"
+      handler=".setuphandlers.post_install">
+  </genericsetup:importStep>
+
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="twNotice.content"
+      directory="profiles/uninstall"
+      description="Uninstalls the twNotice.content add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:importStep
+      name="twNotice.content-uninstall"
+      title="twNotice.content uninstall import step"
+      description="Import step run during ininstalling twNotice.content"
+      handler=".setuphandlers.uninstall">
+  </genericsetup:importStep>
+
+  <utility
+      factory=".setuphandlers.HiddenProfiles"
+      name="twNotice.content-hiddenprofiles" />
+
+</configure>
