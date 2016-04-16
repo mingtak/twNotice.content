@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<object name="portal_catalog" meta_type="Plone Catalog Tool">
+
+  <column value="address"/>
+
+  <index name="orgCode" meta_type="FieldIndex">
+    <indexed_attr value="orgCode" />
+  </index>
+  <column value="orgCode"/>
+
+  <index name="pccOrgCode" meta_type="FieldIndex">
+    <indexed_attr value="pccOrgCode" />
+  </index>
+  <column value="pccOrgCode"/>
+
+
+
+</object>

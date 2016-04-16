@@ -46,4 +46,18 @@
       factory=".setuphandlers.HiddenProfiles"
       name="twNotice.content-hiddenprofiles" />
 
+
+  <!-- Adapter for catalog -->
+  <adapter name="orgCode" factory=".catalog.orgCode_indexer"/>
+  <adapter name="pccOrgCode" factory=".catalog.pccOrgCode_indexer"/>
+  <adapter name="address" factory=".catalog.address_indexer"/>
+<!--  <adapter name="" factory=".catalog._indexer"/>
+  <adapter name="" factory=".catalog._indexer"/>
+  <adapter name="" factory=".catalog._indexer"/>
+  <adapter name="" factory=".catalog._indexer"/>
+  <adapter name="" factory=".catalog._indexer"/>
+  <adapter name="" factory=".catalog._indexer"/>
+  <adapter name="" factory=".catalog._indexer"/>
+-->
+
 </configure>

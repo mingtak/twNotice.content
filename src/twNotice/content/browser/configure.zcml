@@ -17,4 +17,12 @@
       directory="static"
       />
 
+
+  <!-- browserview -->
+  <browser:page
+      name="import_org"
+      for="*"
+      class=".onetime.ImportOrg"
+      permission="cmf.ManagePortal"
+      />
 </configure>
