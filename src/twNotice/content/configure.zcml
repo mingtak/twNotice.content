@@ -51,9 +51,9 @@
   <adapter name="orgCode" factory=".catalog.orgCode_indexer"/>
   <adapter name="pccOrgCode" factory=".catalog.pccOrgCode_indexer"/>
   <adapter name="address" factory=".catalog.address_indexer"/>
+  <adapter name="noticeCategory" factory=".catalog.noticeCategory_indexer"/>
+  <adapter name="childrenCPC" factory=".catalog.childrenCPC_indexer"/>
 <!--  <adapter name="" factory=".catalog._indexer"/>
-  <adapter name="" factory=".catalog._indexer"/>
-  <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>

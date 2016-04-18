@@ -12,6 +12,36 @@ class ITwnoticeContentLayer(IDefaultBrowserLayer):
     """Marker interface that defines a browser layer."""
 
 
+class ICPC(Interface):
+    """ CPC Open data """
+    title = schema.TextLine(
+        title=_(u"Title"),
+        required=True,
+    )
+
+    description = schema.Text(
+        title=_(u"Description"),
+        required=False,
+    )
+
+    engTitle = schema.TextLine(
+        title=_(u"English Title"),
+        required=True,
+    )
+
+    noticeCategory = schema.TextLine(
+        title=_(u"Notice Category"),
+        required=True,
+    )
+
+    childrenCPC = schema.Dict(
+        title=_(u"Children CPC"),
+        key_type=schema.TextLine(title=u"Key"),
+        value_type=schema.TextLine(title=u"Value"),
+        required=False,
+    )
+
+
 class IOrganization(Interface):
 
     title = schema.TextLine(
