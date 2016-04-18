@@ -47,6 +47,7 @@ setup(
         'setuptools',
         'z3c.jbot',
         'plone.app.dexterity',
+        'beautifulsoup4',
     ],
     extras_require={
         'test': [
