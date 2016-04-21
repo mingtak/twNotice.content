@@ -7,9 +7,46 @@ from zope.interface import Interface
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 from z3c.relationfield.schema import RelationChoice
 from plone.app.vocabularies.catalog import CatalogSource
+from .config import NOTICE_TYPE
+
 
 class ITwnoticeContentLayer(IDefaultBrowserLayer):
     """Marker interface that defines a browser layer."""
+
+
+class INotice(Interface):
+    title = schema.TextLine(
+        title=_(u"Title"),
+        required=True,
+    )
+
+    description = schema.Text(
+        title=_(u"Description"),
+        required=False,
+    )
+
+    cpc = RelationChoice(
+        title=_(u"Related CPC"),
+        source=CatalogSource(Type='CPC'),
+        required=False,
+    )
+
+    noticeType = schema.TextLine(
+        title=_(u"Notice Type"),
+        required=True,
+    )
+
+    noticeMeta = schema.Dict(
+        title=_(u"Notice Metadata"),
+        key_type=schema.TextLine(title=u"Key"),
+        value_type=schema.TextLine(title=u"Value"),
+        required=True,
+    )
+
+    noticeURL = schema.URI(
+        title=_(u"Notice URL"),
+        required=True,
+    )
 
 
 class ICPC(Interface):
@@ -83,5 +120,60 @@ class IOrganization(Interface):
     parentOrg = RelationChoice(
         title=_(u"Parent Organization"),
         source=CatalogSource(Type='Organization'),
+        required=False,
+    )
+
+
+class IProfile(Interface):
+    """ 個人頁面 """
+    title = schema.TextLine(
+        title=_(u"Profile Name"),
+        required=True,
+    )
+
+    description = schema.Text(
+        title=_(u"Description"),
+        required=False,
+    )
+
+    phone = schema.TextLine(
+        title=_(u"Phone"),
+        description=_(u"Phone Number."),
+        required=False,
+    )
+
+    cellPhone = schema.TextLine(
+        title=_(u"Cell Phone"),
+        description=_(u"Cell Phone number."),
+        required=False,
+    )
+
+    email = schema.TextLine(
+        title=_(u"Email"),
+        description=_(u"Email."),
+        required=False,
+    )
+
+    addr_city = schema.TextLine(
+        title=_(u"City"),
+        description=_(u"City name."),
+        required=False,
+    )
+
+    addr_district = schema.TextLine(
+        title=_(u"District"),
+        description=_(u"District"),
+        required=False,
+    )
+
+    addr_zip = schema.TextLine(
+        title=_(u"ZIP Code"),
+        description=_(u"ZIP code"),
+        required=False,
+    )
+
+    addr_address = schema.TextLine(
+        title=_(u"Address"),
+        description=_(u"Address"),
         required=False,
     )

@@ -20,16 +20,24 @@
 
   <!-- browserview -->
   <browser:page
+      name="import_notice"
+      for="*"
+      class=".importNotice.ImportNotice"
+      permission="cmf.ManagePortal"
+      />
+<!--
+  <browser:page
       name="import_org"
       for="*"
       class=".importOrg.ImportOrg"
       permission="cmf.ManagePortal"
       />
+
   <browser:page
       name="import_cpc"
       for="*"
       class=".importCPC.ImportCPC"
       permission="cmf.ManagePortal"
       />
-
+-->
 </configure>

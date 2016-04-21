@@ -39,11 +39,11 @@ class ImportCPC(BrowserView):
 #            import pdb;pdb.set_trace()
             cpc = api.content.create(
                 type='CPC',
-                id=item.code.string,
-                title=item.cname.string.encode('utf-8'),
-                engTitle=item.ename.string.encode('utf-8'),
-                noticeCategory=item.category.string.encode('utf-8'),
-                container=portal['category']
+                id=unicode(item.code.string),
+                title=unicode(item.cname.string),
+                engTitle=unicode(item.ename.string),
+                noticeCategory=unicode(item.category.string),
+                container=portal['resource']['category']
             )
             cpc.childrenCPC = {cpc.id:cpc.title}
             if item.cpcsub.string:
