@@ -53,9 +53,9 @@
   <adapter name="address" factory=".catalog.address_indexer"/>
   <adapter name="noticeCategory" factory=".catalog.noticeCategory_indexer"/>
   <adapter name="childrenCPC" factory=".catalog.childrenCPC_indexer"/>
+  <adapter name="noticeURL" factory=".catalog.noticeURL_indexer"/>
+  <adapter name="noticeType" factory=".catalog.noticeType_indexer"/>
 <!--  <adapter name="" factory=".catalog._indexer"/>
-  <adapter name="" factory=".catalog._indexer"/>
-  <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
 -->

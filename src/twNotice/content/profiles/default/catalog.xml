@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
 <object name="portal_catalog" meta_type="Plone Catalog Tool">
 
+  <index name="noticeType" meta_type="FieldIndex">
+    <indexed_attr value="noticeType" />
+  </index>
+  <column value="noticeType"/>
+
+  <index name="noticeURL" meta_type="FieldIndex">
+    <indexed_attr value="noticeURL" />
+  </index>
+  <column value="noticeURL"/>
+
   <index name="noticeCategory" meta_type="FieldIndex">
     <indexed_attr value="noticeCategory" />
   </index>

@@ -3,8 +3,15 @@ from plone.indexer.decorator import indexer
 from zope.interface import Interface
 from Products.CMFPlone.utils import safe_unicode
 
-from twNotice.content.interfaces import IOrganization, ICPC
+from twNotice.content.interfaces import IOrganization, ICPC, INotice
 
+@indexer(INotice)
+def noticeType_indexer(obj):
+    return obj.noticeType
+
+@indexer(INotice)
+def noticeURL_indexer(obj):
+    return obj.noticeURL
 
 @indexer(ICPC)
 def noticeCategory_indexer(obj):
