@@ -36,6 +36,26 @@ class ImportNotice(BrowserView):
     proxy = urllib2.ProxyHandler({'http': 'proxy.hinet.net'})
     opener = urllib2.build_opener(proxy)
 
+
+    def getFolder(self, ds):
+        portal = api.portal.get()
+        year = ds[0:4]
+        month = ds[4:6]
+        day = ds [6:8]
+
+        notice = portal['notice']
+        if not api.content.find(context=notice, id=year):
+            api.content.create(type='Folder', title=year, container=notice)
+            transaction.commit()
+        if not api.content.find(context=notice[year], id=month):
+            api.content.create(type='Folder', title=month, container=notice[year])
+            transaction.commit()
+        if not api.content.find(context=notice[year], id=day):
+            api.content.create(type='Folder', title=day, container=notice[year][month])
+            transaction.commit()
+        return portal['notice'][year][month][day]
+
+
     def getList(self,url):
         urllib2.install_opener(self.opener)
         urlRequest = urllib2.Request(url, headers=GET_HEADERS)
@@ -83,14 +103,12 @@ class ImportNotice(BrowserView):
             notice['cpc'] = RelationValue(intIds.getId(cpcObject))
 
         logger.info(id)
-#        notice.noticeMeta = {}
         for th in all_th:
             notice[th.get_text()] = th.find_next_sibling('td').get_text().strip()
 
         with open('/tmp/%s' % id, 'w') as file:
             pickle.dump(notice, file)
         return
-#        transaction.commit()
 
 
     def __call__(self):
@@ -101,7 +119,9 @@ class ImportNotice(BrowserView):
         portal = api.portal.get()
         intIds = component.getUtility(IIntIds)
 
-        #取得公告首頁
+        # 先確認folder
+        container = self.getFolder(ds=request.form.get('ds'))
+        # 取得公告首頁
         try:
             url = request.form.get('url') # 條件未依需求修改
 # 刊登公報
@@ -147,7 +167,7 @@ class ImportNotice(BrowserView):
                 os.remove('/tmp/%s' % item)
                 noticeObject = api.content.create(
                     type='Notice',
-                    container=portal['notice'],
+                    container=container,
                     id=notice['id'],
                     title=notice['title'],
                     noticeType=notice.get('noticeType'),
