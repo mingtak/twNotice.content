@@ -1,6 +1,31 @@
 <?xml version="1.0"?>
 <object name="portal_catalog" meta_type="Plone Catalog Tool">
 
+  <index name="budget" meta_type="FieldIndex">
+    <indexed_attr value="budget" />
+  </index>
+  <column value="budget"/>
+
+  <index name="bidders" meta_type="KeywordIndex">
+    <indexed_attr value="bidders" />
+  </index>
+  <column value="bidders"/>
+
+  <index name="winner" meta_type="FieldIndex">
+    <indexed_attr value="winner" />
+  </index>
+  <column value="winner"/>
+
+  <index name="dateString" meta_type="FieldIndex">
+    <indexed_attr value="dateString" />
+  </index>
+  <column value="dateString"/>
+
+  <index name="noticeTraceCode" meta_type="FieldIndex">
+    <indexed_attr value="noticeTraceCode" />
+  </index>
+  <column value="noticeTraceCode"/>
+
   <index name="noticeType" meta_type="FieldIndex">
     <indexed_attr value="noticeType" />
   </index>
@@ -32,7 +57,5 @@
     <indexed_attr value="pccOrgCode" />
   </index>
   <column value="pccOrgCode"/>
-
-
 
 </object>

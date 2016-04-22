@@ -49,13 +49,20 @@
 
   <!-- Adapter for catalog -->
   <adapter name="orgCode" factory=".catalog.orgCode_indexer"/>
-  <adapter name="pccOrgCode" factory=".catalog.pccOrgCode_indexer"/>
+  <adapter name="pccOrgCode" factory=".catalog.pccOrgCode_org_indexer"/>
+  <adapter name="pccOrgCode" factory=".catalog.pccOrgCode_notice_indexer"/>
   <adapter name="address" factory=".catalog.address_indexer"/>
   <adapter name="noticeCategory" factory=".catalog.noticeCategory_indexer"/>
   <adapter name="childrenCPC" factory=".catalog.childrenCPC_indexer"/>
   <adapter name="noticeURL" factory=".catalog.noticeURL_indexer"/>
   <adapter name="noticeType" factory=".catalog.noticeType_indexer"/>
+  <adapter name="noticeTraceCode" factory=".catalog.noticeTraceCode_indexer"/>
+  <adapter name="dateString" factory=".catalog.dateString_indexer"/>
+  <adapter name="winner" factory=".catalog.winner_indexer"/>
+  <adapter name="bidders" factory=".catalog.bidders_indexer"/>
+  <adapter name="budget" factory=".catalog.budget_indexer"/>
 <!--  <adapter name="" factory=".catalog._indexer"/>
+  <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
 -->

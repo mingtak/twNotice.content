@@ -25,6 +25,11 @@ class INotice(Interface):
         required=False,
     )
 
+    dateString = schema.TextLine(
+        title=_(u"Date String"),
+        required=True,
+    )
+
     cpc = RelationChoice(
         title=_(u"Related CPC"),
         source=CatalogSource(Type='CPC'),
@@ -36,15 +41,15 @@ class INotice(Interface):
         required=True,
     )
 
+    noticeURL = schema.URI(
+        title=_(u"Notice URL"),
+        required=True,
+    )
+
     noticeMeta = schema.Dict(
         title=_(u"Notice Metadata"),
         key_type=schema.TextLine(title=u"Key"),
         value_type=schema.TextLine(title=u"Value"),
-        required=True,
-    )
-
-    noticeURL = schema.URI(
-        title=_(u"Notice URL"),
         required=True,
     )
 

@@ -104,7 +104,19 @@ class ImportNotice(BrowserView):
 
         logger.info(id)
         for th in all_th:
-            notice[th.get_text()] = th.find_next_sibling('td').get_text().strip()
+            if notice.has_key(th.get_text()):
+                keyIndex = 1
+                logger.info(th.get_text())
+                while True:
+                    newKey = u'%s_%s' % (th.get_text(), keyIndex)
+                    logger.info('newkey: %s, %s' % (newKey, notice.has_key(newKey)))
+                    if notice.has_key(newKey):
+                        keyIndex += 1
+                    else:
+                        notice[newKey] = th.find_next_sibling('td').get_text().strip()
+                        break
+            else:
+                notice[th.get_text()] = th.find_next_sibling('td').get_text().strip()
 
         with open('/tmp/%s' % id, 'w') as file:
             pickle.dump(notice, file)
@@ -124,11 +136,6 @@ class ImportNotice(BrowserView):
         # 取得公告首頁
         try:
             url = request.form.get('url') # 條件未依需求修改
-# 刊登公報
-# http://60.251.139.32:8510/twNotice/import_notice?url=http://web.pcc.gov.tw/prkms/prms-viewTenderStatClient.do?root=tps&ds=20100107
-# 不刊登公報
-# http://60.251.139.32:8510/twNotice/import_notice?
-# url=http://web.pcc.gov.tw/prkms/viewDailyTenderStatClient.do?dateString=20160415&searchMode=common&root=tps&ds=20160415
             htmlDoc = self.getList(url='%s&ds=%s' % (url, request.form.get('ds')))
         except:
             logger.error("網站無回應或被擋了")
@@ -157,6 +164,7 @@ class ImportNotice(BrowserView):
             process.start()
             time.sleep(1)
 
+        # 正式前時間設長一點 200！
         time.sleep(10)
         logger.info('完成')
 
@@ -172,6 +180,7 @@ class ImportNotice(BrowserView):
                     title=notice['title'],
                     noticeType=notice.get('noticeType'),
                     noticeURL=notice.get('noticeURL'),
+                    dateString=request.form.get('ds'),
                     cpc=notice.get('cpc'),
                 )
             except:
