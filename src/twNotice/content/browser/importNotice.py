@@ -44,13 +44,13 @@ class ImportNotice(BrowserView):
         day = ds [6:8]
 
         notice = portal['notice']
-        if not api.content.find(context=notice, id=year):
+        if not notice.get(year):
             api.content.create(type='Folder', title=year, container=notice)
             transaction.commit()
-        if not api.content.find(context=notice[year], id=month):
+        if not notice[year].get(month):
             api.content.create(type='Folder', title=month, container=notice[year])
             transaction.commit()
-        if not api.content.find(context=notice[year], id=day):
+        if not notice[year][month].get(day):
             api.content.create(type='Folder', title=day, container=notice[year][month])
             transaction.commit()
         return portal['notice'][year][month][day]
@@ -104,11 +104,11 @@ class ImportNotice(BrowserView):
 
         logger.info(id)
         for th in all_th:
-            if notice.has_key(th.get_text()):
+            if notice.has_key(th.get_text().strip()):
                 keyIndex = 1
-                logger.info(th.get_text())
+                logger.info(th.get_text().strip())
                 while True:
-                    newKey = u'%s_%s' % (th.get_text(), keyIndex)
+                    newKey = u'%s_%s' % (th.get_text().strip(), keyIndex)
                     logger.info('newkey: %s, %s' % (newKey, notice.has_key(newKey)))
                     if notice.has_key(newKey):
                         keyIndex += 1
@@ -116,14 +116,14 @@ class ImportNotice(BrowserView):
                         notice[newKey] = th.find_next_sibling('td').get_text().strip()
                         break
             else:
-                notice[th.get_text()] = th.find_next_sibling('td').get_text().strip()
+                notice[th.get_text().strip()] = th.find_next_sibling('td').get_text().strip()
 
         with open('/tmp/%s' % id, 'w') as file:
             pickle.dump(notice, file)
         return
 
 
-    def __call__(self):
+    def importNotice(self, link, ds, searchMode):
         context = self.context
         request = self.request
         response = request.response
@@ -132,14 +132,14 @@ class ImportNotice(BrowserView):
         intIds = component.getUtility(IIntIds)
 
         # 先確認folder
-        container = self.getFolder(ds=request.form.get('ds'))
+        container = self.getFolder(ds=ds)
         # 取得公告首頁
         try:
-            url = request.form.get('url') # 條件未依需求修改
-            htmlDoc = self.getList(url='%s&ds=%s' % (url, request.form.get('ds')))
+            url = link # 條件未依需求修改
+            htmlDoc = self.getList(url='%s&ds=%s' % (url, ds))
         except:
-            logger.error("網站無回應或被擋了")
-            raise IOError('web site NO Response')
+            logger.error("網站無回應或被擋了 %s" % url)
+            return
 
         soup = BeautifulSoup(htmlDoc.read(), 'lxml')
 
@@ -148,11 +148,11 @@ class ImportNotice(BrowserView):
             url = item['href']
 
             # 不刊登公報
-            if request.form.get('searchMode'):
+            if searchMode:
                 noticeURL = "http://web.pcc.gov.tw%s" % url
             # 刊登公報
             else:
-                noticeURL = "http://web.pcc.gov.tw/prkms/prms-viewTenderDetailClient.do?ds=%s&fn=%s" % (request.form.get('ds'), url)
+                noticeURL = "http://web.pcc.gov.tw/prkms/prms-viewTenderDetailClient.do?ds=%s&fn=%s" % (ds, url)
 
             if catalog(noticeURL=noticeURL):
                 continue
@@ -162,7 +162,7 @@ class ImportNotice(BrowserView):
 
         for process in multi_process:
             process.start()
-            time.sleep(1)
+#            time.sleep(1)
 
         # 正式前時間設長一點 200！
         time.sleep(10)
@@ -200,6 +200,30 @@ class ImportNotice(BrowserView):
             for key in notice.keys():
                 noticeObject.noticeMeta[key] = notice[key]
             logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
-            notify(ObjectModifiedEvent(noticeObject))
+            try:
+                notify(ObjectModifiedEvent(noticeObject))
+            except:pass
         transaction.commit() 
-        logger.info('程式結束！')
+        logger.info('%s finish!' % ds)
+
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        response = request.response
+        catalog = context.portal_catalog
+        portal = api.portal.get()
+#        intIds = component.getUtility(IIntIds)
+
+        if request.form.get('url'):
+            link = request.form.get('url') # 條件未依需求修改
+            ds = request.form.get('ds')
+            searchMode = request.form.get('searchMode')
+            self.importNotice(link, ds, searchMode)
+        else:
+            with open('/home/plone/noticeList') as file:
+                for line in file:
+                    link = line.split('&ds=')[0]
+                    ds = line.split('&ds=')[1].strip()
+                    searchMode = 'common' if 'searchMode' in line else None
+                    self.importNotice(link, ds, searchMode)

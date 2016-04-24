@@ -11,7 +11,7 @@
   </index>
   <column value="bidders"/>
 
-  <index name="winner" meta_type="FieldIndex">
+  <index name="winner" meta_type="KeywordIndex">
     <indexed_attr value="winner" />
   </index>
   <column value="winner"/>

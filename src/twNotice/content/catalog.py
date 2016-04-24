@@ -17,7 +17,18 @@ def budget_indexer(obj):
 
 @indexer(INotice)
 def winner_indexer(obj):
-    return obj.noticeMeta.get(u"得標廠商")
+    keyIndex = 1
+    winner = []
+    if obj.noticeMeta.get(u"得標廠商"):
+        winner.append(obj.noticeMeta.get(u"得標廠商"))
+    while True:
+        if obj.noticeMeta.get(u"得標廠商_%s" % keyIndex):
+            winner.append(obj.noticeMeta.get(u"得標廠商_%s" % keyIndex))
+            keyIndex += 1
+            continue
+        else:
+            break
+    return winner
 
 @indexer(INotice)
 def bidders_indexer(obj):
