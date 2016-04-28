@@ -3,6 +3,7 @@ from Products.Five.browser import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
 from plone import api
+import requesocks
 import urllib2
 import csv
 from bs4 import BeautifulSoup
@@ -35,6 +36,30 @@ class ImportNotice(BrowserView):
     """
     proxy = urllib2.ProxyHandler({'http': 'proxy.hinet.net'})
     opener = urllib2.build_opener(proxy)
+    session = requesocks.session()
+    #Use Tor for both HTTP and HTTPS
+    session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
+
+    def reportResult(self, ds):
+        year = ds[0:4]
+        month = ds[4:6]
+        day = ds [6:8]
+        portal = api.portal.get()
+        count = len(portal['notice'][year][month][day].getChildNodes())
+
+        api.portal.send_email(recipient='andy@mingtak.com.tw',
+            sender='andy@mingtak.com.tw',
+            subject="完成回報",
+            body="日期：%s, Count: %s" % (ds, count),
+        )
+
+
+    def sendErrLog(self, position, url):
+        api.portal.send_email(recipient='andy@mingtak.com.tw',
+            sender='andy@mingtak.com.tw',
+            subject="URL OPEN錯誤回報",
+            body="位置%s, 被擋了, %s" % (position, url),
+        )
 
 
     def getFolder(self, ds):
@@ -59,7 +84,8 @@ class ImportNotice(BrowserView):
     def getList(self,url):
         urllib2.install_opener(self.opener)
         urlRequest = urllib2.Request(url, headers=GET_HEADERS)
-        return urllib2.urlopen(urlRequest)
+#        return urllib2.urlopen(urlRequest)
+        return self.session.get(url).text
 
 
     def getPage(self, url, id):
@@ -68,8 +94,10 @@ class ImportNotice(BrowserView):
         urllib2.install_opener(self.opener)
         urlRequest = urllib2.Request(url, headers=GET_HEADERS)
         try:
-            htmlDoc = urllib2.urlopen(urlRequest)
+#            htmlDoc = urllib2.urlopen(urlRequest)
+            htmlDoc = self.session.get(url).text
         except:
+            self.sendErrLog(1, url)
             logger.error('urlopen Error, %s' % url)
             return
 
@@ -79,6 +107,7 @@ class ImportNotice(BrowserView):
             title = noticeSoup.find('th', class_='T11b', text='標案名稱').find_next_sibling('td').get_text().strip()
             noticeType = noticeSoup.h1.get_text() if noticeSoup.h1 else noticeSoup.find('td', class_='T11c').get_text()
         except:
+            self.sendErrLog(2, url)
             logger.error('at getPage, %s' % url)
             return
         try:
@@ -138,10 +167,12 @@ class ImportNotice(BrowserView):
             url = link # 條件未依需求修改
             htmlDoc = self.getList(url='%s&ds=%s' % (url, ds))
         except:
+            self.sendErrLog(3, url)
             logger.error("網站無回應或被擋了 %s" % url)
             return
 
-        soup = BeautifulSoup(htmlDoc.read(), 'lxml')
+#        soup = BeautifulSoup(htmlDoc.read(), 'lxml')
+        soup = BeautifulSoup(htmlDoc, 'lxml')
 
         multi_process, filename = [], []
         for item in soup.find_all('a', class_='tenderLink'):
@@ -162,12 +193,13 @@ class ImportNotice(BrowserView):
 
         for process in multi_process:
             process.start()
-#            time.sleep(1)
+            time.sleep(2)
 
         # 正式前時間設長一點 200！
-        time.sleep(10)
+        time.sleep(20)
         logger.info('完成')
 
+        itemCount = 0
         for item in filename:
             try:
                 with open('/tmp/%s' % item) as file:
@@ -200,11 +232,13 @@ class ImportNotice(BrowserView):
             for key in notice.keys():
                 noticeObject.noticeMeta[key] = notice[key]
             logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
+            itemCount += 1
             try:
                 notify(ObjectModifiedEvent(noticeObject))
             except:pass
         transaction.commit() 
         logger.info('%s finish!' % ds)
+        self.reportResult(ds)
 
 
     def __call__(self):
@@ -216,6 +250,8 @@ class ImportNotice(BrowserView):
 #        intIds = component.getUtility(IIntIds)
 
         if request.form.get('url'):
+            # 配合 visudo
+            os.system('sudo service tor reload')
             link = request.form.get('url') # 條件未依需求修改
             ds = request.form.get('ds')
             searchMode = request.form.get('searchMode')
@@ -223,7 +259,12 @@ class ImportNotice(BrowserView):
         else:
             with open('/home/plone/noticeList') as file:
                 for line in file:
-                    link = line.split('&ds=')[0]
-                    ds = line.split('&ds=')[1].strip()
-                    searchMode = 'common' if 'searchMode' in line else None
-                    self.importNotice(link, ds, searchMode)
+                    # 配合 visudo
+                    try:
+                        os.system('sudo service tor reload')
+                        time.sleep(5)
+                        link = line.split('&ds=')[0]
+                        ds = line.split('&ds=')[1].strip()
+                        searchMode = 'common' if 'searchMode' in line else None
+                        self.importNotice(link, ds, searchMode)
+                    except:pass
