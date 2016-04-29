@@ -257,7 +257,7 @@ class ImportNotice(BrowserView):
             searchMode = request.form.get('searchMode')
             self.importNotice(link, ds, searchMode)
         else:
-            with open('~/noticeList') as file:
+            with open('/home/playgroup/noticeList') as file:
                 for line in file:
                     # 配合 visudo
                     try:
