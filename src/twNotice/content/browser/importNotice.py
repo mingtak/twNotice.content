@@ -4,6 +4,7 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
 from plone import api
 import requesocks
+from requesocks import Timeout
 import urllib2
 import csv
 from bs4 import BeautifulSoup
@@ -39,6 +40,25 @@ class ImportNotice(BrowserView):
     session = requesocks.session()
     #Use Tor for both HTTP and HTTPS
     session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
+
+    def sessionGet(self, url):
+        errCount = 0
+        while True:
+            try:
+                responDoc = self.session.get(url, timeout=3)
+                break
+            except:
+                if errCount >= 5:
+                    logger.info('洋蔥失敗5次, %s' % url)
+#                    import pdb; pdb.set_trace()
+                    return ''
+                else:
+                   errCount +=1
+                os.system('sudo service tor reload')
+                time.sleep(2)
+                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
+                continue
+        return responDoc.text
 
     def reportResult(self, ds):
         year = ds[0:4]
@@ -82,25 +102,13 @@ class ImportNotice(BrowserView):
 
 
     def getList(self,url):
-        urllib2.install_opener(self.opener)
-        urlRequest = urllib2.Request(url, headers=GET_HEADERS)
-#        return urllib2.urlopen(urlRequest)
-        return self.session.get(url).text
+        return self.sessionGet(url)
 
 
     def getPage(self, url, id):
         portal = api.portal.get()
 
-        urllib2.install_opener(self.opener)
-        urlRequest = urllib2.Request(url, headers=GET_HEADERS)
-        try:
-#            htmlDoc = urllib2.urlopen(urlRequest)
-            htmlDoc = self.session.get(url).text
-        except:
-            self.sendErrLog(1, url)
-            logger.error('urlopen Error, %s' % url)
-            return
-
+        htmlDoc = self.sessionGet(url)
         noticeSoup = BeautifulSoup(htmlDoc, 'lxml')
         all_th = noticeSoup.find_all('th', class_='T11b')
         try:
@@ -189,14 +197,8 @@ class ImportNotice(BrowserView):
                 continue
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(10000,99999))
             filename.append(id)
-            multi_process.append(Process(target = self.getPage, kwargs={'url':noticeURL, 'id':id}))
+            self.getPage(url=noticeURL, id=id)
 
-        for process in multi_process:
-            process.start()
-            time.sleep(2)
-
-        # 正式前時間設長一點 200！
-        time.sleep(20)
         logger.info('完成')
 
         itemCount = 0
@@ -252,6 +254,7 @@ class ImportNotice(BrowserView):
         if request.form.get('url'):
             # 配合 visudo
             os.system('sudo service tor reload')
+            time.sleep(2)
             link = request.form.get('url') # 條件未依需求修改
             ds = request.form.get('ds')
             searchMode = request.form.get('searchMode')
@@ -262,7 +265,7 @@ class ImportNotice(BrowserView):
                     # 配合 visudo
                     try:
                         os.system('sudo service tor reload')
-                        time.sleep(5)
+                        time.sleep(2)
                         link = line.split('&ds=')[0]
                         ds = line.split('&ds=')[1].strip()
                         searchMode = 'common' if 'searchMode' in line else None
