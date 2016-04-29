@@ -19,6 +19,14 @@
 
 
   <!-- browserview -->
+
+  <browser:page
+      name="notice_to_disk"
+      for="*"
+      class=".notice_to_disk.NoticeToDisk"
+      permission="cmf.ManagePortal"
+      />
+
   <browser:page
       name="import_notice"
       for="*"

@@ -29,7 +29,7 @@ logger = logging.getLogger("IMPORT_NOTICE")
 # 不刊公報 web.pcc.gov.tw/prkms/viewDailyTenderStatClient.do?dateString=20120622&searchMode=common&root=tps
 # 刊登公報 web.pcc.gov.tw/prkms/prms-viewTenderStatClient.do?ds=20160414&root=tps
 
-class ImportNotice(BrowserView):
+class NoticeToDisk(BrowserView):
     """ Import Notice
     """
     session = requesocks.session()
@@ -40,7 +40,7 @@ class ImportNotice(BrowserView):
         errCount = 0
         while True:
             try:
-                responDoc = self.session.get(url, timeout=3)
+                responDoc = self.session.get(url, timeout=5)
                 break
             except:
                 if errCount >= 5:
@@ -150,7 +150,7 @@ class ImportNotice(BrowserView):
             else:
                 notice[th.get_text().strip()] = th.find_next_sibling('td').get_text().strip()
 
-        with open('/tmp/%s' % id, 'w') as file:
+        with open('/home/playgroup/notice_to_disk/%s' % id, 'w') as file:
             pickle.dump(notice, file)
         return
 
@@ -194,48 +194,7 @@ class ImportNotice(BrowserView):
             filename.append(id)
             self.getPage(url=noticeURL, id=id)
 
-        logger.info('完成')
-
-        itemCount = 0
-        for item in filename:
-            try:
-                with open('/tmp/%s' % item) as file:
-                    notice = pickle.load(file)
-                os.remove('/tmp/%s' % item)
-                noticeObject = api.content.create(
-                    type='Notice',
-                    container=container,
-                    id=notice['id'],
-                    title=notice['title'],
-                    noticeType=notice.get('noticeType'),
-                    noticeURL=notice.get('noticeURL'),
-                    dateString=request.form.get('ds'),
-                    cpc=notice.get('cpc'),
-                )
-            except:
-                continue
-#            transaction.commit()
-            if notice.has_key('id'):
-                notice.pop('id')
-            if notice.has_key('title'):
-                notice.pop('title')
-            if notice.has_key('noticeType'):
-                notice.pop('noticeType')
-            if notice.has_key('noticeURL'):
-                notice.pop('noticeURL')
-            if notice.has_key('cpc'):
-                notice.pop('cpc')
-            noticeObject.noticeMeta = {}
-            for key in notice.keys():
-                noticeObject.noticeMeta[key] = notice[key]
-            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
-            itemCount += 1
-            try:
-                notify(ObjectModifiedEvent(noticeObject))
-            except:pass
-        transaction.commit() 
-        logger.info('%s finish!' % ds)
-        self.reportResult(ds)
+        logger.info('%s, 完成, finish!' % ds)
 
 
     def __call__(self):
@@ -246,23 +205,15 @@ class ImportNotice(BrowserView):
         portal = api.portal.get()
 #        intIds = component.getUtility(IIntIds)
 
-        if request.form.get('url'):
-            # 配合 visudo
-            os.system('sudo service tor reload')
-            time.sleep(2)
-            link = request.form.get('url') # 條件未依需求修改
-            ds = request.form.get('ds')
-            searchMode = request.form.get('searchMode')
-            self.importNotice(link, ds, searchMode)
-        else:
-            with open('/home/playgroup/noticeList') as file:
-                for line in file:
-                    # 配合 visudo
-                    try:
-                        os.system('sudo service tor reload')
-                        time.sleep(2)
-                        link = line.split('&ds=')[0]
-                        ds = line.split('&ds=')[1].strip()
-                        searchMode = 'common' if 'searchMode' in line else None
-                        self.importNotice(link, ds, searchMode)
-                    except:pass
+        tempFileName = request.form.get('fname')
+        with open('/home/playgroup/notice_menu/%s' % tempFileName) as file:
+            for line in file:
+                # 配合 visudo
+                try:
+#                    os.system('sudo service tor reload')
+#                    time.sleep(2)
+                    link = line.split('&ds=')[0]
+                    ds = line.split('&ds=')[1].strip()
+                    searchMode = 'common' if 'searchMode' in line else None
+                    self.importNotice(link, ds, searchMode)
+                except:pass
