@@ -51,7 +51,7 @@ class ImportNotice(BrowserView):
                    errCount +=1
                 os.system('sudo service tor reload')
                 time.sleep(2)
-                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
+#                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
         return responDoc.text
 
@@ -70,6 +70,7 @@ class ImportNotice(BrowserView):
 
 
     def sendErrLog(self, position, url):
+        return # 先不寄
         api.portal.send_email(recipient='andy@mingtak.com.tw',
             sender='andy@mingtak.com.tw',
             subject="URL OPEN錯誤回報",
@@ -111,7 +112,7 @@ class ImportNotice(BrowserView):
             noticeType = noticeSoup.h1.get_text() if noticeSoup.h1 else noticeSoup.find('td', class_='T11c').get_text()
         except:
             self.sendErrLog(2, url)
-            logger.error('at getPage, %s' % url)
+#            logger.error('at getPage, %s' % url)
             return
         try:
             cpc = re.findall('[0-9]+', noticeSoup.find('th', text='標的分類').find_next_sibling('td').get_text())[0]
@@ -134,14 +135,14 @@ class ImportNotice(BrowserView):
         if cpcObject:
             notice['cpc'] = RelationValue(intIds.getId(cpcObject))
 
-        logger.info(id)
+#        logger.info(id)
         for th in all_th:
             if notice.has_key(th.get_text().strip()):
                 keyIndex = 1
-                logger.info(th.get_text().strip())
+#                logger.info(th.get_text().strip())
                 while True:
                     newKey = u'%s_%s' % (th.get_text().strip(), keyIndex)
-                    logger.info('newkey: %s, %s' % (newKey, notice.has_key(newKey)))
+#                    logger.info('newkey: %s, %s' % (newKey, notice.has_key(newKey)))
                     if notice.has_key(newKey):
                         keyIndex += 1
                     else:
@@ -171,7 +172,7 @@ class ImportNotice(BrowserView):
             htmlDoc = self.getList(url='%s&ds=%s' % (url, ds))
         except:
             self.sendErrLog(3, url)
-            logger.error("網站無回應或被擋了 %s" % url)
+#            logger.error("網站無回應或被擋了 %s" % url)
             return
 
 #        soup = BeautifulSoup(htmlDoc.read(), 'lxml')
@@ -228,7 +229,7 @@ class ImportNotice(BrowserView):
             noticeObject.noticeMeta = {}
             for key in notice.keys():
                 noticeObject.noticeMeta[key] = notice[key]
-            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
+#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
             itemCount += 1
             try:
                 notify(ObjectModifiedEvent(noticeObject))
