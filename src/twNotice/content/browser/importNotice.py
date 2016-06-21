@@ -179,6 +179,7 @@ class ImportNotice(BrowserView):
         soup = BeautifulSoup(htmlDoc, 'lxml')
 
         filename = []
+        itemCount = 0
         for item in soup.find_all('a', class_='tenderLink'):
             url = item['href']
 
@@ -195,6 +196,15 @@ class ImportNotice(BrowserView):
             filename.append(id)
             self.getPage(url=noticeURL, id=id)
 
+            itemCount += 1
+            if itemCount % 200 == 0:
+                api.portal.send_email(
+                    recipient='andy@mingtak.com.tw',
+                    sender='andy@mingtak.com.tw',
+                    subject='%s Add notice: %s' % (ds, itemCount),
+                    body='As title',
+                )
+                transaction.commit()
         logger.info('完成')
 
         itemCount = 0
@@ -210,7 +220,7 @@ class ImportNotice(BrowserView):
                     title=notice['title'],
                     noticeType=notice.get('noticeType'),
                     noticeURL=notice.get('noticeURL'),
-                    dateString=request.form.get('ds'),
+                    dateString=ds,
                     cpc=notice.get('cpc'),
                 )
             except:
@@ -234,7 +244,7 @@ class ImportNotice(BrowserView):
             try:
                 notify(ObjectModifiedEvent(noticeObject))
             except:pass
-        transaction.commit() 
+        transaction.commit()
         logger.info('%s finish!' % ds)
         self.reportResult(ds)
 
@@ -247,6 +257,7 @@ class ImportNotice(BrowserView):
         portal = api.portal.get()
 #        intIds = component.getUtility(IIntIds)
 
+        logger.info('開始')
         if request.form.get('url'):
             # 配合 visudo
             os.system('sudo service tor reload')
@@ -257,8 +268,10 @@ class ImportNotice(BrowserView):
             self.importNotice(link, ds, searchMode)
         else:
             with open('/home/playgroup/noticeList') as file:
+                logger.info('read file')
                 for line in file:
                     # 配合 visudo
+                    logger.info('This line is %s' % line)
                     try:
                         os.system('sudo service tor reload')
                         time.sleep(2)

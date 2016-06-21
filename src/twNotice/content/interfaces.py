@@ -6,12 +6,37 @@ from zope import schema
 from zope.interface import Interface
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 from z3c.relationfield.schema import RelationChoice
+from z3c.relationfield.schema import RelationList
 from plone.app.vocabularies.catalog import CatalogSource
 from .config import NOTICE_TYPE
 
 
 class ITwnoticeContentLayer(IDefaultBrowserLayer):
     """Marker interface that defines a browser layer."""
+
+
+class ICover(Interface):
+    """ 首頁 """
+    title = schema.TextLine(
+        title=_(u"Title"),
+        required=True,
+    )
+
+    heros = RelationList(
+        title=_(u"Heros"),
+        description=_(u"Rleated image for hero section"),
+        value_type=RelationChoice(title=_(u"Related"),
+                                  source=CatalogSource(Type='Image'),),
+        required=False,
+    )
+
+    hotNews = RelationList(
+        title=_(u"Hot News"),
+        description=_(u"Hot news for home page"),
+        value_type=RelationChoice(title=_(u"Related"),
+                                  source=CatalogSource(Type='News Item'),),
+        required=False,
+    )
 
 
 class INotice(Interface):

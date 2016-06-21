@@ -4,4 +4,5 @@
   <object name="CPC" meta_type="Dexterity FTI"/>
   <object name="Profile" meta_type="Dexterity FTI"/>
   <object name="Notice" meta_type="Dexterity FTI"/>
+  <object name="Cover" meta_type="Dexterity FTI"/>
 </object>

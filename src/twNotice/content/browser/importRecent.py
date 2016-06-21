@@ -23,14 +23,12 @@ import random
 import pickle
 
 
-logger = logging.getLogger("IMPORT_NOTICE")
+logger = logging.getLogger("IMPORT_RECENT")
+TODAY_URL = 'http://web.pcc.gov.tw/pishtml/todaytender.html'
 
 
-# 不刊公報 web.pcc.gov.tw/prkms/viewDailyTenderStatClient.do?dateString=20120622&searchMode=common&root=tps
-# 刊登公報 web.pcc.gov.tw/prkms/prms-viewTenderStatClient.do?ds=20160414&root=tps
-
-class NoticeToDisk(BrowserView):
-    """ Import Notice
+class ImportRecent(BrowserView):
+    """ Import Recent
     """
     session = requesocks.session()
     #Use Tor for both HTTP and HTTPS
@@ -40,7 +38,7 @@ class NoticeToDisk(BrowserView):
         errCount = 0
         while True:
             try:
-                responDoc = self.session.get(url, timeout=5)
+                responDoc = self.session.get(url, timeout=3)
                 break
             except:
                 if errCount >= 5:
@@ -49,8 +47,9 @@ class NoticeToDisk(BrowserView):
                     return ''
                 else:
                    errCount +=1
+                logger.info('洋蔥失敗%s次, %s' % (errCount, url))
                 os.system('sudo service tor reload')
-                time.sleep(random.randint(2,8))
+                time.sleep(2)
 #                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
         return responDoc.text
@@ -60,7 +59,7 @@ class NoticeToDisk(BrowserView):
         month = ds[4:6]
         day = ds [6:8]
         portal = api.portal.get()
-        count = len(portal['notice'][year][month][day].getChildNodes())
+        count = len(portal['recent'][year][month][day].getChildNodes())
 
         api.portal.send_email(recipient='andy@mingtak.com.tw',
             sender='andy@mingtak.com.tw',
@@ -84,17 +83,17 @@ class NoticeToDisk(BrowserView):
         month = ds[4:6]
         day = ds [6:8]
 
-        notice = portal['notice']
-        if not notice.get(year):
-            api.content.create(type='Folder', title=year, container=notice)
+        recent = portal['recent']
+        if not recent.get(year):
+            api.content.create(type='Folder', title=year, container=recent)
             transaction.commit()
-        if not notice[year].get(month):
-            api.content.create(type='Folder', title=month, container=notice[year])
+        if not recent[year].get(month):
+            api.content.create(type='Folder', title=month, container=recent[year])
             transaction.commit()
-        if not notice[year][month].get(day):
-            api.content.create(type='Folder', title=day, container=notice[year][month])
+        if not recent[year][month].get(day):
+            api.content.create(type='Folder', title=day, container=recent[year][month])
             transaction.commit()
-        return portal['notice'][year][month][day]
+        return portal['recent'][year][month][day]
 
 
     def getList(self,url):
@@ -112,7 +111,7 @@ class NoticeToDisk(BrowserView):
             noticeType = noticeSoup.h1.get_text() if noticeSoup.h1 else noticeSoup.find('td', class_='T11c').get_text()
         except:
             self.sendErrLog(2, url)
-            logger.error('at getPage, %s' % url)
+#            logger.error('at getPage, %s' % url)
             return
         try:
             cpc = re.findall('[0-9]+', noticeSoup.find('th', text='標的分類').find_next_sibling('td').get_text())[0]
@@ -151,12 +150,12 @@ class NoticeToDisk(BrowserView):
             else:
                 notice[th.get_text().strip()] = th.find_next_sibling('td').get_text().strip()
 
-        with open('/home/playgroup/notice_to_disk/%s' % id, 'w') as file:
+        with open('/tmp/%s' % id, 'w') as file:
             pickle.dump(notice, file)
         return
 
 
-    def importNotice(self, link, ds, searchMode):
+    def importNotice(self, link, ds):
         context = self.context
         request = self.request
         response = request.response
@@ -168,26 +167,25 @@ class NoticeToDisk(BrowserView):
         container = self.getFolder(ds=ds)
         # 取得公告首頁
         try:
-            url = link # 條件未依需求修改
-            htmlDoc = self.getList(url='%s&ds=%s' % (url, ds))
+            url = link
+            htmlDoc = self.getList(url=url)
         except:
             self.sendErrLog(3, url)
-            logger.error("網站無回應或被擋了 %s" % url)
+#            logger.error("網站無回應或被擋了 %s" % url)
             return
 
 #        soup = BeautifulSoup(htmlDoc.read(), 'lxml')
         soup = BeautifulSoup(htmlDoc, 'lxml')
 
         filename = []
-        for item in soup.find_all('a', class_='tenderLink'):
-            url = item['href']
+        itemCount = 0
 
-            # 不刊登公報
-            if searchMode:
-                noticeURL = "http://web.pcc.gov.tw%s" % url
-            # 刊登公報
-            else:
-                noticeURL = "http://web.pcc.gov.tw/prkms/prms-viewTenderDetailClient.do?ds=%s&fn=%s" % (ds, url)
+        for item in soup.find_all('a'):
+            if 'detail' not in item.get('href', ''):
+                continue
+            url = item.get('href')
+
+            noticeURL = "http://web.pcc.gov.tw%s" % url
 
             if catalog(noticeURL=noticeURL):
                 continue
@@ -195,7 +193,57 @@ class NoticeToDisk(BrowserView):
             filename.append(id)
             self.getPage(url=noticeURL, id=id)
 
-        logger.info('%s, 完成, finish!' % ds)
+            itemCount += 1
+            if itemCount % 200 == 0:
+                api.portal.send_email(
+                    recipient='andy@mingtak.com.tw',
+                    sender='andy@mingtak.com.tw',
+                    subject='%s Add notice: %s' % (ds, itemCount),
+                    body='As title',
+                )
+                transaction.commit()
+        logger.info('完成')
+
+        itemCount = 0
+        for item in filename:
+            try:
+                with open('/tmp/%s' % item) as file:
+                    notice = pickle.load(file)
+                os.remove('/tmp/%s' % item)
+                noticeObject = api.content.create(
+                    type='Notice',
+                    container=container,
+                    id=notice['id'],
+                    title=notice['title'],
+                    noticeType=notice.get('noticeType'),
+                    noticeURL=notice.get('noticeURL'),
+                    dateString=ds,
+                    cpc=notice.get('cpc'),
+                )
+            except:
+                continue
+#            transaction.commit()
+            if notice.has_key('id'):
+                notice.pop('id')
+            if notice.has_key('title'):
+                notice.pop('title')
+            if notice.has_key('noticeType'):
+                notice.pop('noticeType')
+            if notice.has_key('noticeURL'):
+                notice.pop('noticeURL')
+            if notice.has_key('cpc'):
+                notice.pop('cpc')
+            noticeObject.noticeMeta = {}
+            for key in notice.keys():
+                noticeObject.noticeMeta[key] = notice[key]
+#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
+            itemCount += 1
+            try:
+                notify(ObjectModifiedEvent(noticeObject))
+            except:pass
+        transaction.commit()
+        logger.info('%s finish!' % ds)
+        self.reportResult(ds)
 
 
     def __call__(self):
@@ -206,15 +254,10 @@ class NoticeToDisk(BrowserView):
         portal = api.portal.get()
 #        intIds = component.getUtility(IIntIds)
 
-        tempFileName = request.form.get('fname')
-        with open('/home/playgroup/notice_menu/%s' % tempFileName) as file:
-            for line in file:
-                # 配合 visudo
-                try:
-#                    os.system('sudo service tor reload')
-#                    time.sleep(2)
-                    link = line.split('&ds=')[0]
-                    ds = line.split('&ds=')[1].strip()
-                    searchMode = 'common' if 'searchMode' in line else None
-                    self.importNotice(link, ds, searchMode)
-                except:pass
+        logger.info('開始')
+        # 配合 visudo
+        os.system('sudo service tor reload')
+        time.sleep(2)
+        link = TODAY_URL
+        ds = DateTime().strftime('%Y%m%d')
+        self.importNotice(link, ds)

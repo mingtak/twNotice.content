@@ -21,9 +21,23 @@
   <!-- browserview -->
 
   <browser:page
+      name="cover_view"
+      for="twNotice.content.interfaces.ICover"
+      class=".views.CoverView"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
       name="notice_to_disk"
       for="*"
       class=".notice_to_disk.NoticeToDisk"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
+      name="import_recent"
+      for="*"
+      class=".importRecent.ImportRecent"
       permission="cmf.ManagePortal"
       />
 
@@ -33,6 +47,22 @@
       class=".importNotice.ImportNotice"
       permission="cmf.ManagePortal"
       />
+
+  <browser:page
+      name="import_notice_from_folder"
+      for="*"
+      class=".importNoticeFromFolder.ImportNoticeFromFolder"
+      permission="cmf.ManagePortal"
+      />
+
+  <!-- configlet -->
+  <browser:page
+    name="siteSettingControlPanel"
+    for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+    permission="cmf.ManagePortal"
+    class=".siteSetting.SiteSettingControlPanelView"
+  />
+
 <!--
   <browser:page
       name="import_org"

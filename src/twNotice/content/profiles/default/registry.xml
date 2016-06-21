@@ -1,0 +1,3 @@
+<registry>
+  <records interface="twNotice.content.browser.siteSetting.ISiteSetting" />
+</registry>
