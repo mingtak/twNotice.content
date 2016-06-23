@@ -1,0 +1,35 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    xmlns:metal="http://xml.zope.org/namespaces/metal"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    lang="en"
+    metal:use-macro="context/main_template/macros/master"
+    i18n:domain="twNotice.content">
+<body>
+
+
+<metal:content-core fill-slot="content-core">
+<metal:content-core define-macro="content-core"
+                    tal:define="toc context/table_of_contents|nothing;">
+
+
+<h3 tal:content="context/title"/>
+
+<h5 tal:content="context/description"/>
+<h5 tal:content="context/phone"/>
+<h5 tal:content="context/cellPhone"/>
+<h5 tal:content="context/email"/>
+<h5 tal:content="context/addr_city"/>
+<h5 tal:content="context/addr_district"/>
+<h5 tal:content="context/addr_zip"/>
+<h5 tal:content="context/addr_address"/>
+
+
+
+</metal:content-core>
+</metal:content-core>
+
+</body>
+</html>
+
+

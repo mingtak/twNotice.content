@@ -22,11 +22,24 @@ class ICover(Interface):
         required=True,
     )
 
+    heros = schema.List(
+        title=_(u"Heros URL"),
+        value_type = schema.TextLine(title=_(u"URL"),),
+        required=False,
+    )
+
+    """
     heros = RelationList(
         title=_(u"Heros"),
         description=_(u"Rleated image for hero section"),
         value_type=RelationChoice(title=_(u"Related"),
                                   source=CatalogSource(Type='Image'),),
+        required=False,
+    ) """
+
+    cpc = schema.List(
+        title=_(u"CPC"),
+        value_type = schema.TextLine(title=_(u"CPC Code"),),
         required=False,
     )
 

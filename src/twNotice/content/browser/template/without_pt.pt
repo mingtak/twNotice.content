@@ -1,0 +1,1 @@
+<tal:raw content="structure context/text/raw"/>

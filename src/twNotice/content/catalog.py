@@ -7,6 +7,10 @@ from twNotice.content.interfaces import IOrganization, ICPC, INotice
 
 
 @indexer(INotice)
+def cpc_indexer(obj):
+    return obj.cpc.to_object.id
+
+@indexer(INotice)
 def budget_indexer(obj):
     budget = re.findall('[0-9]+', obj.noticeMeta.get(safe_unicode("預算金額")))
     if budget:

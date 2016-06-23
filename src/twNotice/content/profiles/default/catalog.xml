@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <object name="portal_catalog" meta_type="Plone Catalog Tool">
 
+  <index name="cpc" meta_type="FieldIndex">
+    <indexed_attr value="cpc" />
+  </index>
+
   <index name="budget" meta_type="FieldIndex">
     <indexed_attr value="budget" />
   </index>

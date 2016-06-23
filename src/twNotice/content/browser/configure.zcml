@@ -20,20 +20,104 @@
 
   <!-- browserview -->
 
+  <!-- Normal function -->
+  <browser:page
+      name="subscribe"
+      for="*"
+      class=".subscribe.Subscribe"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="join_us"
+      for="*"
+      class=".id_register.JoinUs"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="id_login"
+      for="*"
+      class=".id_register.IdLogin"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="without_pt"
+      for="plone.app.contenttypes.interfaces.IDocument"
+      class=".views.WithoutPT"
+      template="template/without_pt.pt"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="search_result"
+      for="*"
+      class=".search.SearchResult"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="account_info"
+      for="*"
+      class=".myaccount.AccountInfo"
+      permission="zope2.View"
+      />
+
+  <!-- Billing -->
+  <browser:page
+      name="invoice_method"
+      for="*"
+      class=".bill.InvoiceMethod"
+      template="template/invoice_method.pt"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="checkout"
+      for="*"
+      class=".bill.Checkout"
+      permission="zope2.View"
+      />
+
+  <!-- contents type view -->
+  <browser:page
+      name="profile_view"
+      for="twNotice.content.interfaces.IProfile"
+      class=".views.ProfileView"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="organization_view"
+      for="twNotice.content.interfaces.IOrganization"
+      class=".views.OrganizationView"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="cpc_view"
+      for="twNotice.content.interfaces.ICPC"
+      class=".views.CPCView"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="notice_view"
+      for="twNotice.content.interfaces.INotice"
+      class=".views.NoticeView"
+      permission="zope2.View"
+      />
+
   <browser:page
       name="cover_view"
       for="twNotice.content.interfaces.ICover"
       class=".views.CoverView"
-      permission="cmf.ManagePortal"
+      permission="zope2.View"
       />
 
-  <browser:page
-      name="notice_to_disk"
-      for="*"
-      class=".notice_to_disk.NoticeToDisk"
-      permission="cmf.ManagePortal"
-      />
 
+  <!-- Crawler -->
   <browser:page
       name="import_recent"
       for="*"
@@ -48,12 +132,6 @@
       permission="cmf.ManagePortal"
       />
 
-  <browser:page
-      name="import_notice_from_folder"
-      for="*"
-      class=".importNoticeFromFolder.ImportNoticeFromFolder"
-      permission="cmf.ManagePortal"
-      />
 
   <!-- configlet -->
   <browser:page
@@ -62,6 +140,7 @@
     permission="cmf.ManagePortal"
     class=".siteSetting.SiteSettingControlPanelView"
   />
+
 
 <!--
   <browser:page
@@ -78,4 +157,21 @@
       permission="cmf.ManagePortal"
       />
 -->
+
+<!--
+  <browser:page
+      name="import_notice_from_folder"
+      for="*"
+      class=".importNoticeFromFolder.ImportNoticeFromFolder"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
+      name="notice_to_disk"
+      for="*"
+      class=".notice_to_disk.NoticeToDisk"
+      permission="cmf.ManagePortal"
+      />
+-->
+
 </configure>

@@ -53,6 +53,7 @@
   <adapter name="pccOrgCode" factory=".catalog.pccOrgCode_notice_indexer"/>
   <adapter name="address" factory=".catalog.address_indexer"/>
   <adapter name="noticeCategory" factory=".catalog.noticeCategory_indexer"/>
+  <adapter name="cpc" factory=".catalog.cpc_indexer"/>
   <adapter name="childrenCPC" factory=".catalog.childrenCPC_indexer"/>
   <adapter name="noticeURL" factory=".catalog.noticeURL_indexer"/>
   <adapter name="noticeType" factory=".catalog.noticeType_indexer"/>
