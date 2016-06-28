@@ -18,7 +18,34 @@ class OrganizationView(BrowserView):
     def get_this_year(self):
         return DateTime().year()
 
-    def get_info_at_year(self, year):
+
+    def get_winner_at_year(self, year):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+
+        brain = api.content.find(context=portal['notice'][str(year)],
+                                 Type='Notice',
+                                 pccOrgCode=context.pccOrgCode,
+                                 noticeType=[safe_unicode('決標公告'),
+                                             safe_unicode('定期彙送'),]
+                                )
+
+        winnerInfo = {} # 投標廠商資訊, ex. {'XX公司':[n, m]} , n:得標件數, m:得標金額合計
+        for item in brain:
+            winner = item.winner
+            if len(winner) == 1:
+                key = winner[0]
+                try:
+                    money = int(filter(unicode.isdigit, item.getObject().noticeMeta.get(safe_unicode('決標金額'), '0')))
+                except:
+                    money = int(filter(str.isdigit, item.getObject().noticeMeta.get(safe_unicode('決標金額'), '0')))
+                winnerInfo[key] = [winnerInfo.get(key, [0, 0])[0] + 1,
+                        winnerInfo.get(key, [0, 0])[1] + money]
+        return winnerInfo
+
+
+    def get_tender_at_year(self, year):
         context = self.context
         request = self.request
         portal = api.portal.get()
@@ -33,18 +60,20 @@ class OrganizationView(BrowserView):
                                              safe_unicode('公開取得報價單或企劃書公告'),]
                                 )
 
-        budget = 0
-        cpcInfo = {}
+        budget = 0 # 機關預算總計
+        cpcInfo = {} # 開標分類件數
+        cpcBudget = {} # 開標分類預算分計
         for item in brain:
             if item.budget:
                 budget += item.budget
             if item.getObject().cpc:
                 key = item.getObject().cpc.to_object.title
-                if cpcInfo.get(key):
-                    cpcInfo[key] += 1
-                else:
-                    cpcInfo[key] = 1
-        return {'year':year, 'budget':budget, 'cpcInfo':cpcInfo}
+                cpcInfo[key] = cpcInfo.get(key, 0) + 1
+                if item.budget:
+                    cpcBudget[key] = cpcBudget.get(key, 0) + getattr(item, 'budget', 0)
+#應建檔，檔名：year_orgCode , 例：2015_313201500G
+
+        return {'year':year, 'budget':budget, 'cpcInfo':cpcInfo, 'cpcBudget':cpcBudget}
 
 
     def __call__(self):
