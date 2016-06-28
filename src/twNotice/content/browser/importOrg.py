@@ -8,7 +8,7 @@ from z3c.relationfield.relation import RelationValue
 from zope import component
 from zope.app.intid.interfaces import IIntIds
 from zope.event import notify
-from zope.lifecycleevent import ObjectCreatedEvent
+from zope.lifecycleevent import ObjectCreatedEvent, ObjectModifiedEvent
 from DateTime import DateTime
 import transaction
 import logging
@@ -27,7 +27,7 @@ class ImportOrg(BrowserView):
         portal = api.portal.get()
         intIds = component.getUtility(IIntIds)
 
-        with open('/home/plone/orglist.csv') as file:
+        with open('/home/playgroup/orglist.csv') as file:
             csvData = csv.DictReader(file)
 
             for row in csvData:
@@ -43,9 +43,9 @@ class ImportOrg(BrowserView):
                 for level in range(5):
                     if level == 0:
                         pccOrgCode += row.get('orgCode')[0]
-                    elif int(row.get('orgCode')[level*2-1:-2]) == 0:
+                    elif int(row.get('orgCode')[level*2-1:-1]) == 0:
                         break
-                    elif row.get('orgCode')[level*2-1:level*2+1] == '00' and int(row.get('orgCode')[level*2+1:-2]) > 0:
+                    elif row.get('orgCode')[level*2-1:level*2+1] == '00' and int(row.get('orgCode')[level*2+1:-1]) > 0:
                         pccOrgCode += '.100'
                     else:
                         pccOrgCode += ('.' + str(int(row.get('orgCode')[level*2-1:level*2+1])))
@@ -57,25 +57,27 @@ class ImportOrg(BrowserView):
                         orgCode=row['orgCode'],
                         pccOrgCode=pccOrgCode,
                         address=row['address'],
-                        container=portal['organization'],
+                        container=portal['resource']['organization'],
                     )
                     if api.content.find(id=row['newOrgCode']):
-                        obj.newOrg = RelationValue(intIds.getId(portal['organization'][row['newOrgCode']]))
+                        obj.newOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['newOrgCode']]))
                     if api.content.find(id=row['oldOrgCode']):
-                        obj.oldOrg = RelationValue(intIds.getId(portal['organization'][row['oldOrgCode']]))
+                        obj.oldOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['oldOrgCode']]))
                     if api.content.find(id=row['parentOrgCode']):
-                        obj.parentOrg = RelationValue(intIds.getId(portal['organization'][row['parentOrgCode']]))
-
+                        obj.parentOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['parentOrgCode']]))
+                    notify(ObjectModifiedEvent(obj))
+                    logger.info('OK, %s' % obj.title)
                 # update content
                 else:
-                    obj = portal['organization'][row['orgCode']]
+                    obj = portal['resource']['organization'][row['orgCode']]
                     if api.content.find(id=row['newOrgCode']):
-                        obj.newOrg = RelationValue(intIds.getId(portal['organization'][row['newOrgCode']]))  
+                        obj.newOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['newOrgCode']]))  
                     if api.content.find(id=row['oldOrgCode']):
-                        obj.oldOrg = RelationValue(intIds.getId(portal['organization'][row['oldOrgCode']]))
+                        obj.oldOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['oldOrgCode']]))
                     if api.content.find(id=row['parentOrgCode']):
-                        obj.parentOrg = RelationValue(intIds.getId(portal['organization'][row['parentOrgCode']]))
-
+                        obj.parentOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['parentOrgCode']]))
+                    notify(ObjectModifiedEvent(obj))
+                    logger.info('OK, %s' % obj.title)
                 transaction.commit()
               except:
                 if row.get('unitLevel') == '1':
@@ -92,24 +94,27 @@ class ImportOrg(BrowserView):
                         title=row['title'],
                         orgCode=row['orgCode'],
                         address=row['address'],
-                        container=portal['organization'],
+                        container=portal['resource']['organization'],
                     )
                     if api.content.find(id=row['newOrgCode']):
-                        obj.newOrg = RelationValue(intIds.getId(portal['organization'][row['newOrgCode']]))
+                        obj.newOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['newOrgCode']]))
                     if api.content.find(id=row['oldOrgCode']):
-                        obj.oldOrg = RelationValue(intIds.getId(portal['organization'][row['oldOrgCode']]))
+                        obj.oldOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['oldOrgCode']]))
                     if api.content.find(id=row['parentOrgCode']):
-                        obj.parentOrg = RelationValue(intIds.getId(portal['organization'][row['parentOrgCode']]))
+                        obj.parentOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['parentOrgCode']]))
+                    notify(ObjectModifiedEvent(obj))
+                    logger.info('OK, %s' % obj.title)
                 # update content
                 else:
-                    obj = portal['organization'][row['orgCode']]
+                    obj = portal['resource']['organization'][row['orgCode']]
                     if api.content.find(id=row['newOrgCode']):
-                        obj.newOrg = RelationValue(intIds.getId(portal['organization'][row['newOrgCode']]))
+                        obj.newOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['newOrgCode']]))
                     if api.content.find(id=row['oldOrgCode']):
-                        obj.oldOrg = RelationValue(intIds.getId(portal['organization'][row['oldOrgCode']]))
+                        obj.oldOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['oldOrgCode']]))
                     if api.content.find(id=row['parentOrgCode']):
-                        obj.parentOrg = RelationValue(intIds.getId(portal['organization'][row['parentOrgCode']]))
-
+                        obj.parentOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['parentOrgCode']]))
+                    notify(ObjectModifiedEvent(obj))
+                    logger.info('OK, %s' % obj.title)
                 transaction.commit()
                 pass
               ## logger
