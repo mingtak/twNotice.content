@@ -96,6 +96,13 @@
       />
 
   <browser:page
+      name="org_report_view"
+      for="twNotice.content.interfaces.IOrganization"
+      class=".organization_view.OrgReportView"
+      permission="zope2.View"
+      />
+
+  <browser:page
       name="cpc_view"
       for="twNotice.content.interfaces.ICPC"
       class=".views.CPCView"

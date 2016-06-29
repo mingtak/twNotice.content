@@ -19,6 +19,23 @@ class OrganizationView(BrowserView):
         return DateTime().year()
 
 
+    def get_recent(self):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+
+        brain = api.content.find(context=portal['recent'],
+                                 Type='Notice',
+                                 pccOrgCode=context.pccOrgCode,
+                                 noticeType=[safe_unicode('公開招標公告'),
+                                             safe_unicode('限制性招標(經公開評選或公開徵求)公告'),
+                                             safe_unicode('選擇性招標(建立合格廠商名單)公告'),
+                                             safe_unicode('選擇性招標(個案)公告'),
+                                             safe_unicode('公開取得報價單或企劃書公告'),]
+                                )
+        return brain
+
+
     def get_winner_at_year(self, year):
         context = self.context
         request = self.request
@@ -83,3 +100,10 @@ class OrganizationView(BrowserView):
 
         return self.index()
 
+
+class OrgReportView(OrganizationView):
+
+    index = ViewPageTemplateFile("template/org_report_view.pt")
+
+    def __call__(self):
+        return self.index()
