@@ -12,12 +12,21 @@ def cpc_indexer(obj):
 
 @indexer(INotice)
 def budget_indexer(obj):
+    """
     budget = re.findall('[0-9]+', obj.noticeMeta.get(safe_unicode("預算金額")))
+
     if budget:
         d = ''
         for digit in budget:
             d += digit
         return int(d)
+    """
+    try:
+        budget = int(filter(unicode.isdigit, obj.noticeMeta.get(safe_unicode('預算金額'), '0')))
+    except:
+        budget = int(filter(str.isdigit, obj.get(safe_unicode('預算金額'), '0')))
+    return budget
+
 
 @indexer(INotice)
 def winner_indexer(obj):
