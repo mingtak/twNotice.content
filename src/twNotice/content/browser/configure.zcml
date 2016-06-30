@@ -179,6 +179,13 @@
       class=".notice_to_disk.NoticeToDisk"
       permission="cmf.ManagePortal"
       />
+
+  <browser:page
+      name="fix_cpc"
+      for="*"
+      class=".fix_cpc.FixCPC"
+      permission="cmf.ManagePortal"
+      />
 -->
 
 </configure>

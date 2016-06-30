@@ -120,7 +120,7 @@ class ImportRecent(BrowserView):
 
         intIds = component.getUtility(IIntIds)
         try:
-            cpcObject = api.content.find(id=cpc)[0].getObject()
+            cpcObject = api.content.find(Type='CPC', id=cpc)[0].getObject()
         except:
             cpcObject = None
 

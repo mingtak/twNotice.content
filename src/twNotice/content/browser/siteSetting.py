@@ -31,6 +31,10 @@ class ISiteSetting(Form.Schema):
         required=False,
     )
 
+    rReportPath = schema.TextLine(
+        title=_(u"R Report folder Path at filesystem."),
+        required=False,
+    )
 
 class SiteSettingControlPanelForm(RegistryEditForm):
     form.extends(RegistryEditForm)

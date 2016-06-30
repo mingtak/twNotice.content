@@ -7,6 +7,11 @@ from DateTime import DateTime
 #from plone.memoize import ram
 #from time import time
 from Products.CMFPlone.utils import safe_unicode
+import json
+import os
+import logging
+
+logger = logging.getLogger("Organization View")
 
 
 # 產製報表要寫到某個地方(ex. /tmp)，讓之後不用重複運算
@@ -40,6 +45,13 @@ class OrganizationView(BrowserView):
         context = self.context
         request = self.request
         portal = api.portal.get()
+        rPath = api.portal.get_registry_record('twNotice.content.browser.siteSetting.ISiteSetting.rReportPath')
+
+        # 因為json內容要改，所以這段要改
+        if year != self.get_this_year() and os.path.exists('%s/%s_%s_winnerInfo' % (rPath, context.id, year)):
+            with open('%s/%s_%s_winnerInfo' % (rPath, context.id, year)) as file:
+                winnerInfo = json.load(file)
+            return winnerInfo
 
         brain = api.content.find(context=portal['notice'][str(year)],
                                  Type='Notice',
@@ -58,7 +70,25 @@ class OrganizationView(BrowserView):
                 except:
                     money = int(filter(str.isdigit, item.getObject().noticeMeta.get(safe_unicode('決標金額'), '0')))
                 winnerInfo[key] = [winnerInfo.get(key, [0, 0])[0] + 1,
-                        winnerInfo.get(key, [0, 0])[1] + money]
+                                   winnerInfo.get(key, [0, 0])[1] + money]
+
+        if year != self.get_this_year() and not os.path.exists('%s/%s_%s_winnerInfo' % (rPath, context.id, year)):
+            unsorted = sorted(winnerInfo.items(), lambda x, y: cmp(x[1][1], y[1][1]), reverse=True)
+            other = [0, 0]
+            winnerInfo = {}
+            for i in range(len(unsorted)):
+                if i < 6:
+                    winnerInfo[unsorted[i][0]] = unsorted[i][1]
+                else:
+                    other[0] += unsorted[i][1][0]
+                    other[1] += unsorted[i][1][1]
+                    winnerInfo['Other'] = other
+
+
+            with open('%s/%s_%s_winnerInfo' % (rPath, context.id, year), 'w') as file:
+#                import pdb; pdb.set_trace()
+#                file.write(json.dumps(winnerInfo, encoding='unicode'))
+                file.write(json.dumps(winnerInfo))
         return winnerInfo
 
 
@@ -78,19 +108,21 @@ class OrganizationView(BrowserView):
                                 )
 
         budget = 0 # 機關預算總計
-        cpcInfo = {} # 開標分類件數
-        cpcBudget = {} # 開標分類預算分計
+        cpcInfo = {} # CPC, ex. {'CPC分類':[n, m]} , n:開標分類件數, m:開標分類預算分計
         for item in brain:
             if item.budget:
                 budget += item.budget
             if item.getObject().cpc:
                 key = item.getObject().cpc.to_object.title
-                cpcInfo[key] = cpcInfo.get(key, 0) + 1
+                if key.isdigit():
+                    import pdb; pdb.set_trace()
+                cpcInfo[key] = cpcInfo.get(key, [0, 0])
+                cpcInfo[key][0] += 1
                 if item.budget:
-                    cpcBudget[key] = cpcBudget.get(key, 0) + getattr(item, 'budget', 0)
+                    cpcInfo[key][1] += getattr(item, 'budget', 0)
 #應建檔，檔名：year_orgCode , 例：2015_313201500G
 
-        return {'year':year, 'budget':budget, 'cpcInfo':cpcInfo, 'cpcBudget':cpcBudget}
+        return {'budget':budget, 'cpcInfo':cpcInfo}
 
 
     def __call__(self):
