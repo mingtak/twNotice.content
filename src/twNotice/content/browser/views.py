@@ -62,3 +62,18 @@ class CPCView(BrowserView):
 class WithoutPT(BrowserView):
     """ Without PT View
     """
+
+
+class TestZZZ(BrowserView):
+    """ TestZZZ
+    """
+    def __call__(self):
+        context = self.context
+        catalog = context.portal_catalog
+
+        try:
+            brain = catalog(Title='國民小學')[0:100]
+        except:pass
+        import pdb; pdb.set_trace()
+        return 
+

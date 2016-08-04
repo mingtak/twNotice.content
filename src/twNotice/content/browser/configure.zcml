@@ -188,4 +188,13 @@
       />
 -->
 
+
+  <browser:page
+      name="testzzz"
+      for="*"
+      class=".views.TestZZZ"
+      permission="cmf.ManagePortal"
+      />
+
+
 </configure>

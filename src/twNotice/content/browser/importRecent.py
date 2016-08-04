@@ -21,6 +21,8 @@ import re
 import os
 import random
 import pickle
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 
 
 logger = logging.getLogger("IMPORT_RECENT")
@@ -86,13 +88,13 @@ class ImportRecent(BrowserView):
         recent = portal['recent']
         if not recent.get(year):
             api.content.create(type='Folder', title=year, container=recent)
-            transaction.commit()
+#            transaction.commit()
         if not recent[year].get(month):
             api.content.create(type='Folder', title=month, container=recent[year])
-            transaction.commit()
+#            transaction.commit()
         if not recent[year][month].get(day):
             api.content.create(type='Folder', title=day, container=recent[year][month])
-            transaction.commit()
+#            transaction.commit()
         return portal['recent'][year][month][day]
 
 
@@ -241,7 +243,7 @@ class ImportRecent(BrowserView):
             try:
                 notify(ObjectModifiedEvent(noticeObject))
             except:pass
-        transaction.commit()
+#        transaction.commit()
         logger.info('%s finish!' % ds)
         self.reportResult(ds)
 
@@ -253,6 +255,7 @@ class ImportRecent(BrowserView):
         catalog = context.portal_catalog
         portal = api.portal.get()
 #        intIds = component.getUtility(IIntIds)
+        alsoProvides(request, IDisableCSRFProtection)
 
         logger.info('開始')
         # 配合 visudo

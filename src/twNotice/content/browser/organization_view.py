@@ -40,7 +40,7 @@ class OrganizationView(BrowserView):
         catalog = context.portal_catalog
 
         keyword = self.filter_punt(safe_unicode(key))
-        brain = catalog({'Type':'CPC', 'Title':keyword})
+        brain = catalog(Type='CPC', Title=keyword)
         if not brain:
             response.redirect(context.absolute_url())
         for item in brain:
