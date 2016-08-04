@@ -12,6 +12,8 @@ from zope.lifecycleevent import ObjectCreatedEvent, ObjectModifiedEvent
 from DateTime import DateTime
 import transaction
 import logging
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 
 
 logger = logging.getLogger("twNotice.content.import_org")
@@ -27,9 +29,12 @@ class ImportOrg(BrowserView):
         portal = api.portal.get()
         intIds = component.getUtility(IIntIds)
 
+        alsoProvides(request, IDisableCSRFProtection)
+
         with open('/home/playgroup/orglist.csv') as file:
             csvData = csv.DictReader(file)
 
+            commitCount = 0
             for row in csvData:
               try:
                 if row.get('unitLevel') == '1':
@@ -78,7 +83,11 @@ class ImportOrg(BrowserView):
                         obj.parentOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['parentOrgCode']]))
                     notify(ObjectModifiedEvent(obj))
                     logger.info('OK, %s' % obj.title)
-                transaction.commit()
+
+                commitCount += 1
+                if commitCount >= 100:
+                    commitCount = 0
+                    transaction.commit()
               except:
                 if row.get('unitLevel') == '1':
                     row['parentOrgCode'] = ''
@@ -115,6 +124,11 @@ class ImportOrg(BrowserView):
                         obj.parentOrg = RelationValue(intIds.getId(portal['resource']['organization'][row['parentOrgCode']]))
                     notify(ObjectModifiedEvent(obj))
                     logger.info('OK, %s' % obj.title)
-                transaction.commit()
+
+                commitCount += 1
+                if commitCount >= 100:
+                    commitCount = 0
+                    transaction.commit()
+
                 pass
               ## logger
