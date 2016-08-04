@@ -32,7 +32,7 @@ class ImportCPC(BrowserView):
         intIds = component.getUtility(IIntIds)
 
 
-        with open('/home/plone/CpcOpenData.xml') as file:
+        with open('/home/playgroup/CpcOpenData.xml') as file:
             soup = BeautifulSoup(file.read(), 'xml')
 
         for item in soup.find_all('object'):
