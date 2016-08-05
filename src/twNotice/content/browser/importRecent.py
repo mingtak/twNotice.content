@@ -41,7 +41,7 @@ class ImportRecent(BrowserView):
         while True:
             try:
                 responDoc = self.session.get(url, timeout=3)
-                break
+                return responDoc.text
             except:
                 if errCount >= 5:
                     logger.info('洋蔥失敗5次, %s' % url)
@@ -54,7 +54,7 @@ class ImportRecent(BrowserView):
                 time.sleep(2)
 #                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
-        return responDoc.text
+
 
     def reportResult(self, ds):
         year = ds[0:4]
@@ -203,7 +203,7 @@ class ImportRecent(BrowserView):
                     subject='%s Add notice: %s' % (ds, itemCount),
                     body='As title',
                 )
-                transaction.commit()
+#                transaction.commit()
         logger.info('完成')
 
         itemCount = 0
@@ -243,7 +243,8 @@ class ImportRecent(BrowserView):
             try:
                 notify(ObjectModifiedEvent(noticeObject))
             except:pass
-#        transaction.commit()
+            if itemCount % 5 == 0:
+                transaction.commit()
         logger.info('%s finish!' % ds)
         self.reportResult(ds)
 

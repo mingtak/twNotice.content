@@ -85,7 +85,7 @@ class ImportOrg(BrowserView):
                     logger.info('OK, %s' % obj.title)
 
                 commitCount += 1
-                if commitCount >= 100:
+                if commitCount >= 10:
                     commitCount = 0
                     transaction.commit()
               except:

@@ -21,6 +21,8 @@ import re
 import os
 import random
 import pickle
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 
 
 logger = logging.getLogger("IMPORT_NOTICE")
@@ -41,7 +43,7 @@ class ImportNotice(BrowserView):
         while True:
             try:
                 responDoc = self.session.get(url, timeout=3)
-                break
+                return responDoc.text
             except:
                 if errCount >= 5:
                     logger.info('洋蔥失敗5次, %s' % url)
@@ -53,7 +55,7 @@ class ImportNotice(BrowserView):
                 time.sleep(2)
 #                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
-        return responDoc.text
+
 
     def reportResult(self, ds):
         year = ds[0:4]
@@ -87,13 +89,13 @@ class ImportNotice(BrowserView):
         notice = portal['notice']
         if not notice.get(year):
             api.content.create(type='Folder', title=year, container=notice)
-            transaction.commit()
+#            transaction.commit()
         if not notice[year].get(month):
             api.content.create(type='Folder', title=month, container=notice[year])
-            transaction.commit()
+#            transaction.commit()
         if not notice[year][month].get(day):
             api.content.create(type='Folder', title=day, container=notice[year][month])
-            transaction.commit()
+#            transaction.commit()
         return portal['notice'][year][month][day]
 
 
@@ -204,7 +206,8 @@ class ImportNotice(BrowserView):
                     subject='%s Add notice: %s' % (ds, itemCount),
                     body='As title',
                 )
-                transaction.commit()
+                break
+#                transaction.commit()
         logger.info('完成')
 
         itemCount = 0
@@ -244,7 +247,8 @@ class ImportNotice(BrowserView):
             try:
                 notify(ObjectModifiedEvent(noticeObject))
             except:pass
-        transaction.commit()
+            if itemCount % 5 == 0:
+                transaction.commit()
         logger.info('%s finish!' % ds)
         self.reportResult(ds)
 
@@ -256,6 +260,7 @@ class ImportNotice(BrowserView):
         catalog = context.portal_catalog
         portal = api.portal.get()
 #        intIds = component.getUtility(IIntIds)
+        alsoProvides(request, IDisableCSRFProtection)
 
         logger.info('開始')
         if request.form.get('url'):
