@@ -11,6 +11,8 @@ from zope.component import getUtility
 from zope.intid.interfaces import IIntIds
 from zope.security import checkPermission
 from zc.relation.interfaces import ICatalog
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 
 
 def back_references(source_object, attribute_name):
@@ -69,11 +71,26 @@ class TestZZZ(BrowserView):
     """
     def __call__(self):
         context = self.context
+        request = self.request
+        alsoProvides(request, IDisableCSRFProtection)
+
         catalog = context.portal_catalog
 
-        try:
-            brain = catalog(Title='國民小學')[0:100]
-        except:pass
-        import pdb; pdb.set_trace()
-        return 
+        brain = catalog(Type=['CPC', 'Notice', 'Organization'])
+        pubCount = 0
+        for item in brain:
+            itemObj = item.getObject()
+            if api.content.get_state(obj=itemObj) != 'published':
+                api.content.transition(obj=itemObj, transition='publish')
+                transaction.commit()
+                pubCount += 1
+
+            if pubCount % 200 == 0:
+                api.portal.send_email(recipient='andy@mingtak.com.tw',
+                    sender='andy@mingtak.com.tw',
+                    subject="主站已完成commit: %s" % pubCount,
+                    body="As title",
+                )
+                transaction.commit()
+        return
 
