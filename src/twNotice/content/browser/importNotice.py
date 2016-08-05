@@ -69,6 +69,7 @@ class ImportNotice(BrowserView):
             subject="完成回報",
             body="日期：%s, Count: %s" % (ds, count),
         )
+        transaction.commit()
 
 
     def sendErrLog(self, position, url):
@@ -78,6 +79,7 @@ class ImportNotice(BrowserView):
             subject="URL OPEN錯誤回報",
             body="位置%s, 被擋了, %s" % (position, url),
         )
+        transaction.commit()
 
 
     def getFolder(self, ds):
@@ -206,6 +208,7 @@ class ImportNotice(BrowserView):
                     subject='%s Add notice: %s' % (ds, itemCount),
                     body='As title',
                 )
+                transaction.commit()
                 break
 #                transaction.commit()
         logger.info('完成')
