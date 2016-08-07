@@ -11,7 +11,6 @@ from matplotlib import font_manager
 #from time import time
 from Products.CMFPlone.utils import safe_unicode
 import json
-from md5 import md5
 import os
 import logging
 
@@ -65,10 +64,6 @@ class OrganizationView(BrowserView):
         return
 
 
-    def get_md5_filename(self, filename):
-        return md5(filename).hexdigest()
-
-
     def clear_up_sortedList(self, sortedList, baseCount=7, useBaseCount=True):
         other = 0
 
@@ -90,29 +85,29 @@ class OrganizationView(BrowserView):
         return result
 
 
-    def get_exists_file(self, rPath, md5CountString, md5AmountString):
-        if os.path.exists('%s/%s.raw' % (rPath, md5CountString)) and os.path.exists('%s/%s.raw' % (rPath, md5AmountString)):
-            with open('%s/%s.raw' % (rPath, md5CountString)) as file:
+    def get_exists_file(self, rPath, countString, amountString):
+        if os.path.exists('%s/%s.raw' % (rPath, countString)) and os.path.exists('%s/%s.raw' % (rPath, amountString)):
+            with open('%s/%s.raw' % (rPath, countString)) as file:
                 countInfo = json.load(file)
-            with open('%s/%s.raw' % (rPath, md5AmountString)) as file:
+            with open('%s/%s.raw' % (rPath, amountString)) as file:
                 amountInfo = json.load(file)
             return [countInfo, amountInfo]
         else:
             return None
 
 
-    def sort_info(self, rawDict, md5String, rPath):
+    def sort_info(self, rawDict, resultString, rPath):
         sortedList = sorted(rawDict.items(), lambda x, y: cmp(x[1], y[1]))
 
         unPopList = self.clear_up_sortedList(sortedList, useBaseCount=False)
-        with open('%s/%s.raw' % (rPath, md5String), 'w') as file:
+        with open('%s/%s.raw' % (rPath, resultString), 'w') as file:
             file.write(json.dumps(unPopList))
 
         popList = self.clear_up_sortedList(sortedList)
-        with open('%s/%s' % (rPath, md5String), 'w') as file:
+        with open('%s/%s' % (rPath, resultString), 'w') as file:
             file.write(json.dumps(popList))
 
-        self.get_pie(popList, '%s/%s.png' % (rPath, md5String))
+        self.get_pie(popList, '%s/%s.png' % (rPath, resultString))
         return
 
 
@@ -140,10 +135,10 @@ class OrganizationView(BrowserView):
         rPath = api.portal.get_registry_record('twNotice.content.browser.siteSetting.ISiteSetting.rReportPath')
 
         # 存在就讀檔，那今年的檔案要設固定的清除機制
-        md5CountString = self.get_md5_filename('%s_%s_winnerCountInfo' % (context.id, year))
-        md5AmountString = self.get_md5_filename('%s_%s_winnerAmountInfo' % (context.id, year))
+        countString = '%s_%s_winnerCountInfo' % (context.id, year)
+        amountString = '%s_%s_winnerAmountInfo' % (context.id, year)
 
-        exists_info = self.get_exists_file(rPath, md5CountString, md5AmountString)
+        exists_info = self.get_exists_file(rPath, countString, amountString)
         if exists_info:
             return exists_info
 
@@ -166,10 +161,10 @@ class OrganizationView(BrowserView):
                     money = int(filter(str.isdigit, item.getObject().noticeMeta.get(safe_unicode('決標金額'), '0')))
                 winnerCountInfo[key] = winnerCountInfo.get(key, 0) + 1
                 winnerAmountInfo[key] = winnerAmountInfo.get(key, 0) + money
-        self.sort_info(winnerCountInfo, md5CountString, rPath)
-        self.sort_info(winnerAmountInfo, md5AmountString, rPath)
+        self.sort_info(winnerCountInfo, countString, rPath)
+        self.sort_info(winnerAmountInfo, amountString, rPath)
 
-        exists_info = self.get_exists_file(rPath, md5CountString, md5AmountString)
+        exists_info = self.get_exists_file(rPath, countString, amountString)
         return [exists_info[0], exists_info[1]]
 
 #        return [winnerCountInfo, winnerAmountInfo]
@@ -182,10 +177,10 @@ class OrganizationView(BrowserView):
         rPath = api.portal.get_registry_record('twNotice.content.browser.siteSetting.ISiteSetting.rReportPath')
 
         # 存在就讀檔，那今年的檔案要設固定的清除機制
-        md5CountString = self.get_md5_filename('%s_%s_tenderCountInfo' % (context.id, year))
-        md5AmountString = self.get_md5_filename('%s_%s_tenderAmountInfo' % (context.id, year))
+        countString = '%s_%s_tenderCountInfo' % (context.id, year)
+        amountString = '%s_%s_tenderAmountInfo' % (context.id, year)
 
-        exists_info = self.get_exists_file(rPath, md5CountString, md5AmountString)
+        exists_info = self.get_exists_file(rPath, countString, amountString)
         if exists_info:
             tenderCount = 0
             budget = 0
@@ -219,11 +214,11 @@ class OrganizationView(BrowserView):
                 cpcCountInfo[key] = cpcCountInfo.get(key, 0) + 1
                 if item.budget:
                     cpcAmountInfo[key] = cpcAmountInfo.get(key, 0) + getattr(item, 'budget', 0)
-        self.sort_info(cpcCountInfo, md5CountString, rPath)
-        self.sort_info(cpcAmountInfo, md5AmountString, rPath)
+        self.sort_info(cpcCountInfo, countString, rPath)
+        self.sort_info(cpcAmountInfo, amountString, rPath)
 
 
-        exists_info = self.get_exists_file(rPath, md5CountString, md5AmountString)
+        exists_info = self.get_exists_file(rPath, countString, amountString)
         return [budget, tenderCount, exists_info[0], exists_info[1]]
 
 #        import pdb; pdb.set_trace()
