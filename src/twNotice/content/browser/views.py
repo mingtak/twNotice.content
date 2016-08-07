@@ -13,6 +13,7 @@ from zope.security import checkPermission
 from zc.relation.interfaces import ICatalog
 from plone.protect.interfaces import IDisableCSRFProtection
 from zope.interface import alsoProvides
+import logging
 
 
 def back_references(source_object, attribute_name):
@@ -69,6 +70,8 @@ class WithoutPT(BrowserView):
 class TestZZZ(BrowserView):
     """ TestZZZ
     """
+    logger = logging.getLogger("TestZZZ")
+
     def __call__(self):
         context = self.context
         request = self.request
@@ -76,14 +79,14 @@ class TestZZZ(BrowserView):
 
         catalog = context.portal_catalog
 
-        brain = catalog(Type=['CPC', 'Notice', 'Organization'])
+        brain = catalog(Type=['CPC', 'Notice', 'Organization'], review_state='private')
         pubCount = 0
+
+        self.logger.info('一共有：%s' % len(brain))
         for item in brain:
-            itemObj = item.getObject()
-            if api.content.get_state(obj=itemObj) != 'published':
-                api.content.transition(obj=itemObj, transition='publish')
-                transaction.commit()
-                pubCount += 1
+            api.content.transition(obj=item.getObject(), transition='publish')
+            transaction.commit()
+            pubCount += 1
 
             if pubCount % 200 == 0:
                 api.portal.send_email(recipient='andy@mingtak.com.tw',
