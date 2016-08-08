@@ -29,8 +29,8 @@ logger = logging.getLogger("IMPORT_RECENT")
 TODAY_URL = 'http://web.pcc.gov.tw/pishtml/todaytender.html'
 
 
-class ImportRecent(BrowserView):
-    """ Import Recent
+class BaseMethod():
+    """ BaseMethod
     """
     session = requesocks.session()
     #Use Tor for both HTTP and HTTPS
@@ -81,23 +81,19 @@ class ImportRecent(BrowserView):
         transaction.commit()
 
 
-    def getFolder(self, ds):
+    def getFolder(self, ds, container):
         portal = api.portal.get()
         year = ds[0:4]
         month = ds[4:6]
         day = ds [6:8]
 
-        recent = portal['recent']
-        if not recent.get(year):
-            api.content.create(type='Folder', title=year, container=recent)
-#            transaction.commit()
-        if not recent[year].get(month):
-            api.content.create(type='Folder', title=month, container=recent[year])
-#            transaction.commit()
-        if not recent[year][month].get(day):
-            api.content.create(type='Folder', title=day, container=recent[year][month])
-#            transaction.commit()
-        return portal['recent'][year][month][day]
+        if not container.get(year):
+            api.content.create(type='Folder', title=year, container=container)
+        if not container[year].get(month):
+            api.content.create(type='Folder', title=month, container=container[year])
+        if not container[year][month].get(day):
+            api.content.create(type='Folder', title=day, container=container[year][month])
+        return container[year][month][day]
 
 
     def getList(self,url):
@@ -159,6 +155,10 @@ class ImportRecent(BrowserView):
         return
 
 
+class ImportRecent(BrowserView, BaseMethod):
+    """ Import Recent
+    """
+
     def importNotice(self, link, ds):
         context = self.context
         request = self.request
@@ -168,7 +168,7 @@ class ImportRecent(BrowserView):
         intIds = component.getUtility(IIntIds)
 
         # 先確認folder
-        container = self.getFolder(ds=ds)
+        container = self.getFolder(ds=ds, container=portal['recent'])
         # 取得公告首頁
         try:
             url = link

@@ -23,6 +23,7 @@ import random
 import pickle
 from plone.protect.interfaces import IDisableCSRFProtection
 from zope.interface import alsoProvides
+from twNotice.content.browser.importRecent import BaseMethod
 
 
 logger = logging.getLogger("IMPORT_NOTICE")
@@ -31,134 +32,9 @@ logger = logging.getLogger("IMPORT_NOTICE")
 # 不刊公報 web.pcc.gov.tw/prkms/viewDailyTenderStatClient.do?dateString=20120622&searchMode=common&root=tps
 # 刊登公報 web.pcc.gov.tw/prkms/prms-viewTenderStatClient.do?ds=20160414&root=tps
 
-class ImportNotice(BrowserView):
+class ImportNotice(BrowserView, BaseMethod):
     """ Import Notice
     """
-    session = requesocks.session()
-    #Use Tor for both HTTP and HTTPS
-    session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
-
-    def sessionGet(self, url):
-        errCount = 0
-        while True:
-            try:
-                responDoc = self.session.get(url, timeout=3)
-                return responDoc.text
-            except:
-                if errCount >= 5:
-                    logger.info('洋蔥失敗5次, %s' % url)
-#                    import pdb; pdb.set_trace()
-                    return ''
-                else:
-                   errCount +=1
-                os.system('sudo service tor reload')
-                time.sleep(2)
-#                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
-                continue
-
-
-    def reportResult(self, ds):
-        year = ds[0:4]
-        month = ds[4:6]
-        day = ds [6:8]
-        portal = api.portal.get()
-        count = len(portal['notice'][year][month][day].getChildNodes())
-
-        api.portal.send_email(recipient='andy@mingtak.com.tw',
-            sender='andy@mingtak.com.tw',
-            subject="完成回報",
-            body="日期：%s, Count: %s" % (ds, count),
-        )
-        transaction.commit()
-
-
-    def sendErrLog(self, position, url):
-        return # 先不寄
-        api.portal.send_email(recipient='andy@mingtak.com.tw',
-            sender='andy@mingtak.com.tw',
-            subject="URL OPEN錯誤回報",
-            body="位置%s, 被擋了, %s" % (position, url),
-        )
-        transaction.commit()
-
-
-    def getFolder(self, ds):
-        portal = api.portal.get()
-        year = ds[0:4]
-        month = ds[4:6]
-        day = ds [6:8]
-
-        notice = portal['notice']
-        if not notice.get(year):
-            api.content.create(type='Folder', title=year, container=notice)
-#            transaction.commit()
-        if not notice[year].get(month):
-            api.content.create(type='Folder', title=month, container=notice[year])
-#            transaction.commit()
-        if not notice[year][month].get(day):
-            api.content.create(type='Folder', title=day, container=notice[year][month])
-#            transaction.commit()
-        return portal['notice'][year][month][day]
-
-
-    def getList(self,url):
-        return self.sessionGet(url)
-
-
-    def getPage(self, url, id):
-        portal = api.portal.get()
-
-        htmlDoc = self.sessionGet(url)
-        noticeSoup = BeautifulSoup(htmlDoc, 'lxml')
-        all_th = noticeSoup.find_all('th', class_='T11b')
-        try:
-            title = noticeSoup.find('th', class_='T11b', text='標案名稱').find_next_sibling('td').get_text().strip()
-            noticeType = noticeSoup.h1.get_text() if noticeSoup.h1 else noticeSoup.find('td', class_='T11c').get_text()
-        except:
-            self.sendErrLog(2, url)
-#            logger.error('at getPage, %s' % url)
-            return
-        try:
-            cpc = re.findall('[0-9]+', noticeSoup.find('th', text='標的分類').find_next_sibling('td').get_text())[0]
-        except:
-            cpc = None
-
-        intIds = component.getUtility(IIntIds)
-        try:
-            cpcObject = api.content.find(Type='CPC', id=cpc)[0].getObject()
-        except:
-            cpcObject = None
-
-        notice = {
-            'id':id,
-            'title':title,
-            'noticeType':noticeType,
-            'noticeURL':url,
-        }
-
-        if cpcObject:
-            notice['cpc'] = RelationValue(intIds.getId(cpcObject))
-
-#        logger.info(id)
-        for th in all_th:
-            if notice.has_key(th.get_text().strip()):
-                keyIndex = 1
-#                logger.info(th.get_text().strip())
-                while True:
-                    newKey = u'%s_%s' % (th.get_text().strip(), keyIndex)
-#                    logger.info('newkey: %s, %s' % (newKey, notice.has_key(newKey)))
-                    if notice.has_key(newKey):
-                        keyIndex += 1
-                    else:
-                        notice[newKey] = th.find_next_sibling('td').get_text().strip()
-                        break
-            else:
-                notice[th.get_text().strip()] = th.find_next_sibling('td').get_text().strip()
-
-        with open('/tmp/%s' % id, 'w') as file:
-            pickle.dump(notice, file)
-        return
-
 
     def importNotice(self, link, ds, searchMode):
         context = self.context
@@ -169,7 +45,7 @@ class ImportNotice(BrowserView):
         intIds = component.getUtility(IIntIds)
 
         # 先確認folder
-        container = self.getFolder(ds=ds)
+        container = self.getFolder(ds=ds, container=portal['notice'])
         # 取得公告首頁
         try:
             url = link # 條件未依需求修改
