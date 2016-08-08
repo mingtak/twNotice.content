@@ -238,4 +238,13 @@ class OrgReportView(OrganizationView):
     index = ViewPageTemplateFile("template/org_report_view.pt")
 
     def __call__(self):
+
+        if api.user.is_anonymous():
+            self.canSee = False
+        else:
+            roles = api.user.get_roles()
+            if list(set(roles) & set(['Reader', 'Site Administrator', 'Manager'])):
+                self.canSee = True
+            else:
+                self.canSee = False
         return self.index()
