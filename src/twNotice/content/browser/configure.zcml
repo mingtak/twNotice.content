@@ -92,14 +92,14 @@
       name="organization_view"
       for="twNotice.content.interfaces.IOrganization"
       class=".organization_view.OrganizationView"
-      permission="cmf.ManagePortal"
+      permission="zope2.View"
       />
 
   <browser:page
       name="org_report_view"
       for="twNotice.content.interfaces.IOrganization"
       class=".organization_view.OrgReportView"
-      permission="cmf.ManagePortal"
+      permission="zope2.AccessContentsInformation"
       />
 
   <browser:page
@@ -113,7 +113,7 @@
       name="notice_view"
       for="twNotice.content.interfaces.INotice"
       class=".notice_view.NoticeView"
-      permission="cmf.ManagePortal"
+      permission="zope2.View"
       />
 
   <browser:page
