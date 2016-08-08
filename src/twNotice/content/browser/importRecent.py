@@ -225,6 +225,7 @@ class ImportRecent(BrowserView):
                     dateString=ds,
                     cpc=notice.get('cpc'),
                 )
+                api.content.transition(obj=noticeObject, transition='publish')
             except:
                 continue
 #            transaction.commit()
