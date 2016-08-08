@@ -99,7 +99,7 @@
       name="org_report_view"
       for="twNotice.content.interfaces.IOrganization"
       class=".organization_view.OrgReportView"
-      permission="zope2.AccessContentsInformation"
+      permission="zope2.View"
       />
 
   <browser:page
