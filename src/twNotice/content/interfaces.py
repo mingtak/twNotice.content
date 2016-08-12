@@ -166,6 +166,14 @@ class IOrganization(Interface):
         required=False,
     )
 
+    # 單位分析
+    report = schema.Dict(
+        title=_(u"Report"),
+        key_type=schema.TextLine(title=u"Key"),
+        value_type=schema.TextLine(title=u"Value"),
+        required=False,
+    )
+
 
 class IProfile(Interface):
     """ 個人頁面 """
