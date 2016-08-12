@@ -10,9 +10,12 @@ from matplotlib import font_manager
 #from plone.memoize import ram
 #from time import time
 from Products.CMFPlone.utils import safe_unicode
+from plone import namedfile
 import json
 import os
 import logging
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 
 logger = logging.getLogger("Organization View")
 
@@ -50,20 +53,6 @@ class OrganizationView(BrowserView):
         return DateTime().year()
 
 
-    def get_pie(self, sortedList, filename, width=10, height=6):
-        labels = sortedList[0]
-        sizes = sortedList[1]
-        font = font_manager.FontProperties(fname='/usr/share/fonts/truetype/wqy/wqy-microhei.ttc')
-        plt.figure(figsize=(width, height))
-        figText = plt.pie(sizes, labels=labels, shadow=True, startangle=90, autopct='%1.1f%%', radius=0.9)[1]
-        for item in figText:
-           item.set_fontproperties(font)
-        plt.axis('equal')
-        plt.savefig(filename)
-        plt.close()
-        return
-
-
     def clear_up_sortedList(self, sortedList, baseCount=7, useBaseCount=True):
         other = 0
 
@@ -97,17 +86,22 @@ class OrganizationView(BrowserView):
 
 
     def sort_info(self, rawDict, resultString, rPath):
-        sortedList = sorted(rawDict.items(), lambda x, y: cmp(x[1], y[1]))
+        context = self.context
+        portal = api.portal.get()
 
+        sortedList = sorted(rawDict.items(), lambda x, y: cmp(x[1], y[1]))
         unPopList = self.clear_up_sortedList(sortedList, useBaseCount=False)
-        with open('%s/%s.raw' % (rPath, resultString), 'w') as file:
-            file.write(json.dumps(unPopList))
+
+        if not context.report:
+            context.report = {}
+        if not context.pieChart:
+            context.pieChart = {}
+
+        context.report['%s_raw' % resultString] = json.dumps(unPopList)
 
         popList = self.clear_up_sortedList(sortedList)
-        with open('%s/%s' % (rPath, resultString), 'w') as file:
-            file.write(json.dumps(popList))
+        context.report['%s' % resultString] = json.dumps(popList)
 
-        self.get_pie(popList, '%s/%s.png' % (rPath, resultString))
         return
 
 
@@ -165,9 +159,9 @@ class OrganizationView(BrowserView):
         self.sort_info(winnerAmountInfo, amountString, rPath)
 
         exists_info = self.get_exists_file(rPath, countString, amountString)
+        if not exists_info:
+            exists_info = [[], []]
         return [exists_info[0], exists_info[1]]
-
-#        return [winnerCountInfo, winnerAmountInfo]
 
 
     def get_tender_at_year(self, year):
@@ -219,10 +213,9 @@ class OrganizationView(BrowserView):
 
 
         exists_info = self.get_exists_file(rPath, countString, amountString)
+        if not exists_info:
+            exists_info = [[], []]
         return [budget, tenderCount, exists_info[0], exists_info[1]]
-
-#        import pdb; pdb.set_trace()
-#        return [budget, tenderCount, cpcCountInfo, cpcAmountInfo]
 
 
     def __call__(self):
@@ -237,7 +230,10 @@ class OrgReportView(OrganizationView):
 
     index = ViewPageTemplateFile("template/org_report_view.pt")
 
+
     def __call__(self):
+        request = self.request
+        alsoProvides(request, IDisableCSRFProtection)
 
         if api.user.is_anonymous():
             self.canSee = False
