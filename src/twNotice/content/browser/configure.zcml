@@ -96,6 +96,13 @@
       />
 
   <browser:page
+      name="get_pie_data"
+      for="twNotice.content.interfaces.IOrganization"
+      class=".organization_view.GetPieData"
+      permission="zope2.View"
+      />
+
+  <browser:page
       name="org_report_view"
       for="twNotice.content.interfaces.IOrganization"
       class=".organization_view.OrgReportView"

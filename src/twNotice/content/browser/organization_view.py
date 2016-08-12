@@ -244,3 +244,14 @@ class OrgReportView(OrganizationView):
             else:
                 self.canSee = False
         return self.index()
+
+
+class GetPieData(BrowserView):
+
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        alsoProvides(request, IDisableCSRFProtection)
+
+        return json.loads(context.report['309380000Q_2015_winnerAmountInfo'])[1]
