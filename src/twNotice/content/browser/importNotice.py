@@ -61,6 +61,9 @@ class ImportNotice(BrowserView, BaseMethod):
         filename = []
         itemCount = 0
         for item in soup.find_all('a', class_='tenderLink'):
+            # 排除時間，暫用，之後移到configlet
+            if DateTime().hour() in [3, 22, 23]:
+                break
             url = item['href']
 
             # 不刊登公報
