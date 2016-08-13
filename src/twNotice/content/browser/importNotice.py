@@ -73,8 +73,12 @@ class ImportNotice(BrowserView, BaseMethod):
             else:
                 noticeURL = "http://web.pcc.gov.tw/prkms/prms-viewTenderDetailClient.do?ds=%s&fn=%s" % (ds, url)
 
+            if 'twjavascript' in noticeURL:
+                continue
+
             if catalog(noticeURL=noticeURL):
                 continue
+
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
             filename.append(id)
             self.getPage(url=noticeURL, id=id)
