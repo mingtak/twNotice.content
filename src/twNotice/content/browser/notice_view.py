@@ -40,6 +40,17 @@ class NoticeView(BrowserView):
         return deadline
 
 
+    def get_related(self):
+        context = self.context
+        catalog = context.portal_catalog
+
+        pccOrgCode = context.noticeMeta.get(safe_unicode('機關代碼'))
+        noticeId = context.noticeMeta.get(safe_unicode('標案案號'))
+        noticeTraceCode = '%s--%s' % (pccOrgCode, noticeId)
+        brain = catalog(noticeTraceCode=noticeTraceCode, sort_on='dateString')
+        return brain
+
+
     def __call__(self):
         return self.index()
 
