@@ -206,7 +206,6 @@ class ImportRecent(BrowserView, BaseMethod):
                     body='As title',
                 )
                 transaction.commit()
-                break
         logger.info('完成')
 
         itemCount = 0
