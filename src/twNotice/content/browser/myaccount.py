@@ -17,3 +17,4 @@ class AccountInfo(BrowserView):
 
     def __call__(self):
         context = self.context
+        return self.template()

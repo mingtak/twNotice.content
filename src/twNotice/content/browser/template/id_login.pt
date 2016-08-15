@@ -3,20 +3,54 @@
     xmlns:metal="http://xml.zope.org/namespaces/metal"
     xmlns:i18n="http://xml.zope.org/namespaces/i18n"
     lang="en"
-    metal:use-macro="context/main_template/macros/master"
     i18n:domain="twNotice.content">
-<body>
+
+<?python
+from plone import api
+portal = api.portal.get()
+is_anonymous = api.user.is_anonymous()
+?>
+
+<form class="enableAutoFocus" method="post" id="login_form"
+      tal:attributes="action string:${portal/absolute_url}/login_form"
+      tal:condition="python:is_anonymous">
+                <div id="login-form">
+                    <input type="hidden" name="came_from" value="">
+                    <input type="hidden" name="next">
+                    <input type="hidden" name="ajax_load">
+                    <input type="hidden" name="ajax_include_head">
+                    <input type="hidden" name="target">
+                    <input type="hidden" name="mail_password_url">
+                    <input type="hidden" name="join_url">
+                    <input type="hidden" name="form.submitted" value="1">
+                    <input type="hidden" name="js_enabled" id="js_enabled" value="0">
+                    <input type="hidden" name="cookies_enabled" id="cookies_enabled" value="">
+                    <input type="hidden" name="login_name" id="login_name" value="">
+                    <input type="hidden" name="pwd_empty" id="pwd_empty" value="0">
+                    <div class="field">
+                        <label for="__ac_name" i18n:translate="">Account ID</label>
+                        <input type="text" size="15" name="__ac_name" id="__ac_name" value=""
+                               placeholder="Please input ID" i18n:attributes="placeholder">
+                </div>
+                <div class="field">
+                        <label for="__ac_password" i18n:translate="">Password</label>
+                        <input type="password" size="15" name="__ac_password" id="__ac_password"
+                               placeholder="Please input password" i18n:attributes="placeholder">
+                </div>
+                    <div class="formControls">
+                        <input class="context btn_small btn btn_purple" type="submit" name="submit" value="Login" i18n:attributes="value">
+                    </div>
+                </div>
+                <span tal:replace="structure context/@@authenticator/authenticator"/>
+</form>
+
+<script>
+$('.ajax').colorbox({
+    onComplete : function() {
+       $(this).colorbox.resize({'width': '30%', });
+    }
+});
+</script>
 
 
-<metal:content-core fill-slot="content-core">
-<metal:content-core define-macro="content-core"
-                    tal:define="toc context/table_of_contents|nothing;">
-
-
-
-</metal:content-core>
-</metal:content-core>
-
-</body>
 </html>
-
