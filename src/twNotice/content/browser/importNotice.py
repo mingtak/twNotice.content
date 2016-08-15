@@ -162,6 +162,10 @@ class ImportNotice(BrowserView, BaseMethod):
             with open('/home/playgroup/noticeList') as file:
                 logger.info('read file')
                 for line in file:
+                    # 排除時間，暫用，之後移到configlet
+                    if DateTime().hour() in [3, 22, 23]:
+                        return
+
                     # 配合 visudo
                     logger.info('This line is %s' % line)
                     try:
