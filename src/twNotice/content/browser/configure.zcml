@@ -64,6 +64,13 @@
       permission="zope2.View"
       />
 
+  <browser:page
+      name="update_account_info"
+      for="*"
+      class=".myaccount.UpdateAccountInfo"
+      permission="zope2.View"
+      />
+
   <!-- Billing -->
   <browser:page
       name="invoice_method"

@@ -6,6 +6,8 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from plone import api
 import transaction
 #from zope.security import checkPermission
+from plone.protect.interfaces import IDisableCSRFProtection
+from zope.interface import alsoProvides
 
 
 class BaseMethod(BrowserView):
@@ -43,3 +45,31 @@ class AccountInfo(BaseMethod):
     def __call__(self):
         context = self.context
         return self.template()
+
+
+class UpdateAccountInfo(BaseMethod):
+    """ Update Account Information
+    """
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+        alsoProvides(request, IDisableCSRFProtection)
+
+        currentId = self.currentId()
+        profile = portal['members'][currentId]
+
+        profile.title = request.form.get('name')
+        profile.phone = request.form.get('phone')
+        profile.cellPhone = request.form.get('cellPhone')
+        profile.addr_district = request.form.get('district')
+        profile.addr_city = request.form.get('city')
+        profile.addr_zip = request.form.get('zipcode')
+        profile.addr_address = request.form.get('address')
+        profile.email = request.form.get('email')
+#        import pdb; pdb.set_trace()
+        request.response.redirect('%s/@@account_info' % portal.absolute_url())
+
+        return
+
