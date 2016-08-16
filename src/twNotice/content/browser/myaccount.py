@@ -51,6 +51,31 @@ class UpdateAccountInfo(BaseMethod):
     """ Update Account Information
     """
 
+    def update_basic(self, profile, request):
+        profile.title = request.form.get('name')
+        profile.phone = request.form.get('phone')
+        profile.cellPhone = request.form.get('cellPhone')
+        profile.addr_district = request.form.get('district')
+        profile.addr_city = request.form.get('city')
+        profile.addr_zip = request.form.get('zipcode')
+        profile.addr_address = request.form.get('address')
+        profile.email = request.form.get('email')
+        return
+
+
+    def update_keyword(self, profile, request):
+        keywords = request.form.get('keyword')
+        if not keywords:
+            profile.traceKeywords = None
+            return
+
+        profile.traceKeywords = []
+        for keyword in keywords:
+            if keyword.strip():
+                profile.traceKeywords.append(keyword)
+        return
+
+
     def __call__(self):
         context = self.context
         request = self.request
@@ -60,15 +85,11 @@ class UpdateAccountInfo(BaseMethod):
         currentId = self.currentId()
         profile = portal['members'][currentId]
 
-        profile.title = request.form.get('name')
-        profile.phone = request.form.get('phone')
-        profile.cellPhone = request.form.get('cellPhone')
-        profile.addr_district = request.form.get('district')
-        profile.addr_city = request.form.get('city')
-        profile.addr_zip = request.form.get('zipcode')
-        profile.addr_address = request.form.get('address')
-        profile.email = request.form.get('email')
-#        import pdb; pdb.set_trace()
+        if request.form.has_key('keyword'):
+            self.update_keyword(profile, request)
+        elif request.form.has_key('phone'):
+            self.update_basic(profile,request)
+
         request.response.redirect('%s/@@account_info' % portal.absolute_url())
 
         return
