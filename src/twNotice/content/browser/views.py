@@ -96,9 +96,23 @@ class CPCView(BrowserView):
     """
     index = ViewPageTemplateFile("template/cpc_view.pt")
 
+    def related_notice(self):
+        context = self.context
+        portal = api.portal.get()
+        catalog = context.portal_catalog
+
+#        brain = catalog({'Type':'Notice', 'cpc':context.id}, sort_on='dateString', sort_order='reverse')
+        brain = api.content.find(type='Notice',
+            cpc=context.id,
+            context=portal['recent'],
+            sort_on='dateString',
+            sort_order='reverse')
+        return brain
+
+
     def __call__(self):
         context = self.context
-        self.back_ref = back_references(context, 'cpc')
+#        self.back_ref = back_references(context, 'cpc')
         return self.index()
 
 

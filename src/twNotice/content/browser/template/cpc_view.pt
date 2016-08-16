@@ -29,15 +29,7 @@ from plone import api
   </li>
 </ul>
 
-
-
 <h5 i18n:translate="">Relation Notice</h5>
-<ul>
-  <li tal:repeat="item view/back_ref">
-    <a tal:attributes="href item/absolute_url" tal:content="item/title">
-    </a>
-  </li>
-</ul>
 
 </metal:content-core>
 </metal:content-core>
