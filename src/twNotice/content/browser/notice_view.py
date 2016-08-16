@@ -51,6 +51,27 @@ class NoticeView(BrowserView):
         return brain
 
 
+    def traceState(self):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+
+        if api.user.is_anonymous():
+            return 'anon'
+
+        currentId = api.user.get_current().id
+        noticeTraceCode = '%s--%s' % (context.noticeMeta.get(u'機關代碼'), context.noticeMeta.get(u'標案案號'))
+        profile = portal['members'][currentId]
+
+        if not profile.noticeTraceCode:
+            return 'untrace'
+
+        if noticeTraceCode in profile.noticeTraceCode:
+            return 'trace'
+        else:
+            return 'untrace'
+
+
     def __call__(self):
         return self.index()
 

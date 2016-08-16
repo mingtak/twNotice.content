@@ -21,6 +21,14 @@
   <!-- browserview -->
 
   <!-- Normal function -->
+
+  <browser:page
+      name="update_trace_notice"
+      for="*"
+      class=".views.UpdateTraceNotice"
+      permission="zope2.View"
+      />
+
   <browser:page
       name="subscribe"
       for="*"

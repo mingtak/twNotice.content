@@ -33,6 +33,46 @@ def back_references(source_object, attribute_name):
     return result
 
 
+class UpdateTraceNotice(BrowserView):
+    """ Update Trace Notice
+    """
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+        alsoProvides(request, IDisableCSRFProtection)
+
+        if api.user.is_anonymous():
+            return '請先登入網站'
+
+        currentId = api.user.get_current().id
+        profile = portal['members'][currentId]
+
+        if not request.form.get('id', '').strip():
+            return 'flase'
+        notice = api.content.find(type='Notice', id=request.form['id'])[0]
+        noticeTraceCode = notice.noticeTraceCode
+
+        if request.form.get('trace') == 'n':
+            if not profile.noticeTraceCode:
+                return '標案追蹤'
+            elif noticeTraceCode in profile.noticeTraceCode:
+                profile.noticeTraceCode.remove(noticeTraceCode)
+            return '標案追蹤'
+
+        elif request.form.get('trace') == 'y':
+            if profile.noticeTraceCode:
+                if noticeTraceCode in profile.noticeTraceCode:
+                    return '取消追蹤'
+                else:
+                    profile.noticeTraceCode.append(noticeTraceCode)
+            else:
+                profile.noticeTraceCode = [noticeTraceCode]
+
+            return '取消追蹤'
+
+
 class ProfileView(BrowserView):
     """ Profile View
     """

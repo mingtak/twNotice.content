@@ -199,6 +199,12 @@ class IProfile(Interface):
         required=False,
     )
 
+    noticeTraceCode = schema.List(
+        title=_(u"Notice Trace Code"),
+        value_type = schema.TextLine(title=_(u"Notice Trace Code"),),
+        required=False,
+    )
+
     cellPhone = schema.TextLine(
         title=_(u"Cell Phone"),
         description=_(u"Cell Phone number."),
