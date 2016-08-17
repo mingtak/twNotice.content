@@ -48,6 +48,7 @@ setup(
         'z3c.jbot',
         'plone.app.dexterity',
         'beautifulsoup4',
+        'email_validator',
     ],
     extras_require={
         'test': [

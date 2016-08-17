@@ -23,6 +23,27 @@
   <!-- Normal function -->
 
   <browser:page
+      name="send_notice"
+      for="*"
+      class=".customReport.SendNotice"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
+      name="today_notice"
+      for="*"
+      class=".customReport.TodayNotice"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="bidder_info"
+      for="*"
+      class=".views.BidderInfo"
+      permission="zope2.View"
+      />
+
+  <browser:page
       name="update_trace_notice"
       for="*"
       class=".views.UpdateTraceNotice"

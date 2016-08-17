@@ -5,7 +5,7 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from plone import api
 from DateTime import DateTime
 import transaction
-
+from Products.CMFPlone.utils import safe_unicode
 from Acquisition import aq_inner
 from zope.component import getUtility
 from zope.intid.interfaces import IIntIds
@@ -16,21 +16,28 @@ from zope.interface import alsoProvides
 import logging
 
 
-def back_references(source_object, attribute_name):
+class BidderInfo(BrowserView):
+    """ Bidder Information
+    """
+    index = ViewPageTemplateFile("template/bidder_info.pt")
 
-    catalog = getUtility(ICatalog)
-    intids = getUtility(IIntIds)
-    result = []
-    for rel in catalog.findRelations(
-                dict(to_id=intids.getId(aq_inner(source_object)),
-                from_attribute=attribute_name)):
-        obj = intids.queryObject(rel.from_id)
-        if obj is not None and checkPermission('zope2.View', obj):
-            result.append(obj)
-            # 太龐大，只找3筆
-            if len(result) > 3:
-                break
-    return result
+    def __call__(self):
+        context = self.context
+        request = self.request
+        catalog = context.portal_catalog
+        portal = api.portal.get()
+
+        bidder = request.form.get('bidder')
+        if not bidder:
+            request.response.redirect(portal.absolute_url())
+            return
+
+        self.brain = catalog(
+            {'Type':'Notice','bidders':safe_unicode(bidder)},
+            sort_on='dateString',
+            sort_order='reverse',
+        )
+        return self.index()
 
 
 class UpdateTraceNotice(BrowserView):
@@ -101,7 +108,6 @@ class CPCView(BrowserView):
         portal = api.portal.get()
         catalog = context.portal_catalog
 
-#        brain = catalog({'Type':'Notice', 'cpc':context.id}, sort_on='dateString', sort_order='reverse')
         brain = api.content.find(type='Notice',
             cpc=context.id,
             context=portal['recent'],
@@ -112,7 +118,6 @@ class CPCView(BrowserView):
 
     def __call__(self):
         context = self.context
-#        self.back_ref = back_references(context, 'cpc')
         return self.index()
 
 
