@@ -46,7 +46,6 @@
       factory=".setuphandlers.HiddenProfiles"
       name="twNotice.content-hiddenprofiles" />
 
-
   <!-- Adapter for catalog -->
   <adapter name="orgCode" factory=".catalog.orgCode_indexer"/>
   <adapter name="pccOrgCode" factory=".catalog.pccOrgCode_org_indexer"/>
@@ -62,8 +61,8 @@
   <adapter name="winner" factory=".catalog.winner_indexer"/>
   <adapter name="bidders" factory=".catalog.bidders_indexer"/>
   <adapter name="budget" factory=".catalog.budget_indexer"/>
+  <adapter name="noticeTimes" factory=".catalog.noticeTimes_indexer"/>
 <!--  <adapter name="" factory=".catalog._indexer"/>
-  <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
   <adapter name="" factory=".catalog._indexer"/>
 -->

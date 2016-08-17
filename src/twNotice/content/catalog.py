@@ -7,6 +7,13 @@ from twNotice.content.interfaces import IOrganization, ICPC, INotice
 
 
 @indexer(INotice)
+def noticeTimes_indexer(obj):
+    try:
+        return int(obj.noticeMeta.get(u'新增公告傳輸次數'))
+    except:
+        return None
+
+@indexer(INotice)
 def cpc_indexer(obj):
     return obj.cpc.to_object.id
 

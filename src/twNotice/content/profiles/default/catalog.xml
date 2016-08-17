@@ -62,4 +62,9 @@
   </index>
   <column value="pccOrgCode"/>
 
+  <index name="noticeTimes" meta_type="FieldIndex">
+    <indexed_attr value="noticeTimes" />
+  </index>
+  <column value="noticeTimes"/>
+
 </object>
