@@ -147,6 +147,7 @@ class ReindexNoticeTimes(BrowserView):
             count += 1
             if count % 500 == 0:
                 self.logger.info('Count: %s' % count)
+        self.logger.info('Reindex notice times, Finial.')
 
 
 class TestZZZ(BrowserView):
