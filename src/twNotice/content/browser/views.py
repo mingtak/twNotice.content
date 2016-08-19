@@ -126,6 +126,29 @@ class WithoutPT(BrowserView):
     """
 
 
+class ReindexNoticeTimes(BrowserView):
+    """ Reindex Notice Times
+    """
+
+    logger = logging.getLogger("Reindex Notice Times")
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+        catalog = context.portal_catalog
+        alsoProvides(request, IDisableCSRFProtection)
+
+        brain = catalog(Type='Notice')
+
+        count = 0
+        for item in brain:
+            item.getObject().reindexObject(idxs=['noticeTimes'])
+            count += 1
+            if count % 500 == 0:
+                self.logger.info('Count: %s' % count)
+
+
 class TestZZZ(BrowserView):
     """ TestZZZ
     """
@@ -155,4 +178,5 @@ class TestZZZ(BrowserView):
                 )
                 transaction.commit()
         return
+
 

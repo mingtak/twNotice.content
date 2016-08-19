@@ -207,6 +207,12 @@
       permission="cmf.ManagePortal"
       />
 
+  <browser:page
+      name="reindex_noticeTimes"
+      for="*"
+      class=".views.ReindexNoticeTimes"
+      permission="cmf.ManagePortal"
+      />
 
 <!--
   <browser:page
