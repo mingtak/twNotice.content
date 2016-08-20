@@ -95,10 +95,15 @@ class OrganizationView(BrowserView):
         if not context.report:
             context.report = {}
 
-        context.report['%s_raw' % resultString] = json.dumps(unPopList)
+#        data = json.dumps(unPopList)
+#        import pdb; pdb.set_trace()
+        result = []
+        for i in range(len(unPopList[0])):
+            result.append([unPopList[0][i], unPopList[1][i]])
+        context.report['%s_raw' % resultString] = json.dumps(result)
 
-        popList = self.clear_up_sortedList(sortedList)
-        context.report['%s' % resultString] = json.dumps(popList)
+#        popList = self.clear_up_sortedList(sortedList)
+        context.report['%s' % resultString] = json.dumps(result[-6:])
 
         return
 
@@ -193,7 +198,7 @@ class OrganizationView(BrowserView):
                                              safe_unicode('公開取得報價單或企劃書公告'),]
                                 )
 
-        tenderCount = 0 # 機關開標案數總計
+        tenderCount = 0 # 機關開標案數總計(cpc)
         budget = 0 # 機關預算總計
         cpcCountInfo = {} # CPC資訊, ex. {'cpc':n} , n:開標件數
         cpcAmountInfo = {} # CPC資訊, ex. {'cpc':n} , n:開標預算分計
