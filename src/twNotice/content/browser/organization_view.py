@@ -94,8 +94,6 @@ class OrganizationView(BrowserView):
 
         if not context.report:
             context.report = {}
-        if not context.pieChart:
-            context.pieChart = {}
 
         context.report['%s_raw' % resultString] = json.dumps(unPopList)
 
