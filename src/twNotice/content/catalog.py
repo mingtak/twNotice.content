@@ -9,7 +9,10 @@ from twNotice.content.interfaces import IOrganization, ICPC, INotice
 @indexer(INotice)
 def noticeTimes_indexer(obj):
     try:
-        return int(obj.noticeMeta.get(u'新增公告傳輸次數'))
+        if obj.noticeMeta.get(u'新增公告傳輸次數'):
+            return int(obj.noticeMeta.get(u'新增公告傳輸次數'))
+        elif obj.noticeMeta.get(safe_unicode('新增公告傳輸次數')):
+            return int(obj.noticeMeta.get(safe_unicode('新增公告傳輸次數')))
     except:
         return None
 

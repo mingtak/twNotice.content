@@ -142,12 +142,24 @@ class ReindexNoticeTimes(BrowserView):
         brain = catalog(Type='Notice')
 
         count = 0
-        for item in brain:
+        self.logger.info('Total: %s' % len(brain))
+        for item in  brain:
+            if item.noticeTimes:
+                continue
+
+            try:
+                if item.getObject().noticeMeta.get(safe_unicode('新增公告傳輸次數')) is None:
+                    continue
+                elif not int(item.getObject().noticeMeta.get(safe_unicode('新增公告傳輸次數'))):
+                    continue
+            except:
+                self.logger.error('ERROR: %s | %s' % (item.getURL(), item.noticeURL))
+
             item.getObject().reindexObject(idxs=['noticeTimes'])
             count += 1
             if count % 500 == 0:
+                transaction.commit()
                 self.logger.info('Count: %s' % count)
-        self.logger.info('Reindex notice times, Finial.')
 
 
 class TestZZZ(BrowserView):
