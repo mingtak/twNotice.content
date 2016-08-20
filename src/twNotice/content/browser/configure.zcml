@@ -132,6 +132,13 @@
       />
 
   <browser:page
+      name="reset_report"
+      for="*"
+      class=".organization_view.ResetReport"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
       name="get_pie_data"
       for="twNotice.content.interfaces.IOrganization"
       class=".organization_view.GetPieData"

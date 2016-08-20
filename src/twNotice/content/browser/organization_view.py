@@ -16,6 +16,7 @@ import os
 import logging
 from plone.protect.interfaces import IDisableCSRFProtection
 from zope.interface import alsoProvides
+import transaction
 
 logger = logging.getLogger("Organization View")
 
@@ -258,3 +259,23 @@ class GetPieData(BrowserView):
         alsoProvides(request, IDisableCSRFProtection)
 
         return json.loads(context.report['309380000Q_2015_winnerAmountInfo'])[1]
+
+
+class ResetReport(BrowserView):
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        catalog = context.portal_catalog
+
+        alsoProvides(request, IDisableCSRFProtection)
+
+        brain = catalog(Type="Organization")
+        count = 0
+        for item in brain:
+            item.getObject().report = None
+            count += 1
+            if count % 500 == 0:
+                transaction.commit()
+                logger.info('Reset Report, commit: %s' % count)
+
