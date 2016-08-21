@@ -100,11 +100,14 @@ class OrganizationView(BrowserView):
 #        import pdb; pdb.set_trace()
         result = []
         for i in range(len(unPopList[0])):
-            result.append([unPopList[0][i], unPopList[1][i]])
+            result.append({'label':unPopList[0][i], 'count':unPopList[1][i]})
         context.report['%s_raw' % resultString] = json.dumps(result)
 
-#        popList = self.clear_up_sortedList(sortedList)
-        context.report['%s' % resultString] = json.dumps(result[-6:])
+        popList = self.clear_up_sortedList(sortedList)
+        result = []
+        for i in range(len(popList[0])):
+            result.append({'label':popList[0][i], 'count':popList[1][i]})
+        context.report['%s' % resultString] = json.dumps(result)
 
         return
 
@@ -236,8 +239,13 @@ class OrgReportView(OrganizationView):
 
 
     def __call__(self):
+        context = self.context
         request = self.request
         alsoProvides(request, IDisableCSRFProtection)
+
+        data = request.form.get('data')
+        if data:
+            return context.report.get(data.replace('pie', ''))
 
         if api.user.is_anonymous():
             self.canSee = False
