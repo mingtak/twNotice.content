@@ -36,6 +36,50 @@ class ImportNotice(BrowserView, BaseMethod):
     """ Import Notice
     """
 
+    def createContents(self, filename, container, ds):
+        itemCount = 0
+        for item in filename:
+            try:
+                with open('/tmp/%s' % item) as file:
+                    notice = pickle.load(file)
+                os.remove('/tmp/%s' % item)
+                noticeObject = api.content.create(
+                    type='Notice',
+                    container=container,
+                    id=notice['id'],
+                    title=notice['title'],
+                    noticeType=notice.get('noticeType'),
+                    noticeURL=notice.get('noticeURL'),
+                    dateString=ds,
+                    cpc=notice.get('cpc'),
+                )
+                api.content.transition(obj=noticeObject, transition='publish')
+            except:
+                continue
+#            transaction.commit()
+            if notice.has_key('id'):
+                notice.pop('id')
+            if notice.has_key('title'):
+                notice.pop('title')
+            if notice.has_key('noticeType'):
+                notice.pop('noticeType')
+            if notice.has_key('noticeURL'):
+                notice.pop('noticeURL')
+            if notice.has_key('cpc'):
+                notice.pop('cpc')
+            noticeObject.noticeMeta = {}
+            for key in notice.keys():
+                noticeObject.noticeMeta[key] = notice[key]
+#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
+            itemCount += 1
+            try:
+                notify(ObjectModifiedEvent(noticeObject))
+            except:pass
+
+            if itemCount % 5 == 0:
+                transaction.commit()
+
+
     def importNotice(self, link, ds, searchMode):
         context = self.context
         request = self.request
@@ -84,58 +128,21 @@ class ImportNotice(BrowserView, BaseMethod):
             self.getPage(url=noticeURL, id=id)
 
             itemCount += 1
-            if itemCount % 200 == 0:
+            if itemCount % 10 == 0:
+                logger.info('Start Creat Contents: %s' % itemCount)
                 api.portal.send_email(
                     recipient='andy@mingtak.com.tw',
                     sender='andy@mingtak.com.tw',
                     subject='%s Add notice: %s' % (ds, itemCount),
                     body='As title',
                 )
+                self.createContents(filename, container, ds)
                 transaction.commit()
-                break
-#                transaction.commit()
-        logger.info('完成')
+                filename = []
 
-        itemCount = 0
-        for item in filename:
-            try:
-                with open('/tmp/%s' % item) as file:
-                    notice = pickle.load(file)
-                os.remove('/tmp/%s' % item)
-                noticeObject = api.content.create(
-                    type='Notice',
-                    container=container,
-                    id=notice['id'],
-                    title=notice['title'],
-                    noticeType=notice.get('noticeType'),
-                    noticeURL=notice.get('noticeURL'),
-                    dateString=ds,
-                    cpc=notice.get('cpc'),
-                )
-                api.content.transition(obj=noticeObject, transition='publish')
-            except:
-                continue
-#            transaction.commit()
-            if notice.has_key('id'):
-                notice.pop('id')
-            if notice.has_key('title'):
-                notice.pop('title')
-            if notice.has_key('noticeType'):
-                notice.pop('noticeType')
-            if notice.has_key('noticeURL'):
-                notice.pop('noticeURL')
-            if notice.has_key('cpc'):
-                notice.pop('cpc')
-            noticeObject.noticeMeta = {}
-            for key in notice.keys():
-                noticeObject.noticeMeta[key] = notice[key]
-#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
-            itemCount += 1
-            try:
-                notify(ObjectModifiedEvent(noticeObject))
-            except:pass
-            if itemCount % 5 == 0:
-                transaction.commit()
+        # 最後不足 200 要再做一次
+        logger.info('Start Creat Contents: %s' % itemCount)
+        self.createContents(filename, container, ds)
         logger.info('%s finish!' % ds)
         self.reportResult(ds)
 
@@ -163,7 +170,7 @@ class ImportNotice(BrowserView, BaseMethod):
                 logger.info('read file')
                 for line in file:
                     # 排除時間，暫用，之後移到configlet
-                    if DateTime().hour() in [3, 22, 23]:
+                    if DateTime().hour() in [3, 22, 22]:
                         return
 
                     # 配合 visudo
