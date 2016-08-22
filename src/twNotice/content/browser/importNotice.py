@@ -130,12 +130,13 @@ class ImportNotice(BrowserView, BaseMethod):
             itemCount += 1
             if itemCount % 10 == 0:
                 logger.info('Start Creat Contents: %s' % itemCount)
-                api.portal.send_email(
-                    recipient='andy@mingtak.com.tw',
-                    sender='andy@mingtak.com.tw',
-                    subject='%s Add notice: %s' % (ds, itemCount),
-                    body='As title',
-                )
+                if itemCount % 200 == 0:
+                    api.portal.send_email(
+                        recipient='andy@mingtak.com.tw',
+                        sender='andy@mingtak.com.tw',
+                        subject='%s Add notice: %s' % (ds, itemCount),
+                        body='As title',
+                    )
                 self.createContents(filename, container, ds)
                 transaction.commit()
                 filename = []
