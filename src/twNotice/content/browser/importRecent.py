@@ -56,12 +56,12 @@ class BaseMethod():
                 continue
 
 
-    def reportResult(self, ds):
+    def reportResult(self, ds, container):
         year = ds[0:4]
         month = ds[4:6]
         day = ds [6:8]
         portal = api.portal.get()
-        count = len(portal['recent'][year][month][day].getChildNodes())
+        count = len(container.getChildNodes())
 
         api.portal.send_email(recipient='andy@mingtak.com.tw',
             sender='andy@mingtak.com.tw',
@@ -249,7 +249,7 @@ class ImportRecent(BrowserView, BaseMethod):
             if itemCount % 5 == 0:
                 transaction.commit()
         logger.info('%s finish!' % ds)
-        self.reportResult(ds)
+        self.reportResult(ds, container)
 
 
     def __call__(self):

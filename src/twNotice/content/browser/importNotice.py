@@ -145,7 +145,7 @@ class ImportNotice(BrowserView, BaseMethod):
         logger.info('Start Creat Contents: %s' % itemCount)
         self.createContents(filename, container, ds)
         logger.info('%s finish!' % ds)
-        self.reportResult(ds)
+        self.reportResult(ds, container)
 
 
     def __call__(self):
