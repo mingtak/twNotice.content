@@ -238,6 +238,14 @@ class OrgReportView(OrganizationView):
     index = ViewPageTemplateFile("template/org_report_view.pt")
 
 
+    def get_bar_data(self, dataString):
+        context = self.context
+        request = self.request
+        data = context.report.get(dataString)
+        data = data.replace('"count"', '"得標廠商"')
+        return data
+
+
     def get_pie_data(self, dataString):
         context = self.context
         request = self.request
@@ -255,8 +263,13 @@ class OrgReportView(OrganizationView):
         alsoProvides(request, IDisableCSRFProtection)
 
         data = request.form.get('data')
+
         if data and data.startswith('pie'):
             return self.get_pie_data(data.replace('pie', ''))
+
+        if data and data.startswith('bar'):
+            return self.get_bar_data(data.replace('bar', ''))
+
 
         if api.user.is_anonymous():
             self.canSee = False
