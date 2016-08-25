@@ -238,14 +238,25 @@ class OrgReportView(OrganizationView):
     index = ViewPageTemplateFile("template/org_report_view.pt")
 
 
+    def get_pie_data(self, dataString):
+        context = self.context
+        request = self.request
+        data = context.report.get(dataString)
+        result = {}
+        for item in json.loads(data):
+            result[item['label']] = item['count']
+
+        return json.dumps(result)
+
+
     def __call__(self):
         context = self.context
         request = self.request
         alsoProvides(request, IDisableCSRFProtection)
 
         data = request.form.get('data')
-        if data:
-            return context.report.get(data.replace('pie', ''))
+        if data and data.startswith('pie'):
+            return self.get_pie_data(data.replace('pie', ''))
 
         if api.user.is_anonymous():
             self.canSee = False
