@@ -104,6 +104,9 @@ class BaseMethod():
         portal = api.portal.get()
 
         htmlDoc = self.sessionGet(url)
+        if not htmlDoc:
+            return
+
         noticeSoup = BeautifulSoup(htmlDoc, 'lxml')
         all_th = noticeSoup.find_all('th', class_='T11b')
         try:
@@ -194,8 +197,12 @@ class ImportRecent(BrowserView, BaseMethod):
             if catalog(noticeURL=noticeURL):
                 continue
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
-            filename.append(id)
+
             self.getPage(url=noticeURL, id=id)
+            if os.path.exists('/tmp/%s' % id):
+                filename.append(id)
+            else:
+                continue
 
             itemCount += 1
             if itemCount % 200 == 0:

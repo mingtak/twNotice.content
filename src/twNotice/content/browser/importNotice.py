@@ -110,7 +110,7 @@ class ImportNotice(BrowserView, BaseMethod):
         itemCount = 0
         for item in soup.find_all('a', class_='tenderLink'):
             # 排除時間，暫用，之後移到configlet
-            if DateTime().hour() in [3, 22, 23]:
+            if DateTime().hour() in [3, 23]:
                 break
             url = item['href']
 
@@ -128,8 +128,12 @@ class ImportNotice(BrowserView, BaseMethod):
                 continue
 
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
-            filename.append(id)
+
             self.getPage(url=noticeURL, id=id)
+            if os.path.exists('/tmp/%s' % id):
+                filename.append(id)
+            else:
+                continue
 
             itemCount += 1
             if itemCount % 10 == 0:
