@@ -55,6 +55,7 @@ class ImportNotice(BrowserView, BaseMethod):
                 )
                 api.content.transition(obj=noticeObject, transition='publish')
             except:
+                logger.error('line 58')
                 continue
 #            transaction.commit()
             if notice.has_key('id'):
@@ -74,7 +75,9 @@ class ImportNotice(BrowserView, BaseMethod):
             itemCount += 1
             try:
                 notify(ObjectModifiedEvent(noticeObject))
-            except:pass
+            except:
+                logger.error('line 79')
+                pass
 
             if itemCount % 5 == 0:
                 transaction.commit()
@@ -95,6 +98,7 @@ class ImportNotice(BrowserView, BaseMethod):
             url = link # 條件未依需求修改
             htmlDoc = self.getList(url='%s&ds=%s' % (url, ds))
         except:
+            logger.error('line 101')
             self.sendErrLog(3, url)
 #            logger.error("網站無回應或被擋了 %s" % url)
             return
@@ -183,4 +187,6 @@ class ImportNotice(BrowserView, BaseMethod):
                         ds = line.split('&ds=')[1].strip()
                         searchMode = 'common' if 'searchMode' in line else None
                         self.importNotice(link, ds, searchMode)
-                    except:pass
+                    except:
+                        logger.error('line 191')
+                        pass
