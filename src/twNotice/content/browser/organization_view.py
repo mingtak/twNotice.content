@@ -243,6 +243,15 @@ class OrgReportView(OrganizationView):
         request = self.request
         data = context.report.get(dataString)
         data = data.replace('"count"', '"得標廠商"')
+
+        if request.form.has_key('len'):
+#            import pdb; pdb.set_trace()
+            dataLen = len(json.loads(data))
+            if dataLen:
+                return dataLen
+            else:
+                return 1
+
         return data
 
 
