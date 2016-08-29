@@ -244,6 +244,12 @@
       />
 -->
 
+  <browser:page
+      name="content_amount"
+      for="*"
+      class=".views.ContentAmount"
+      permission="cmf.ManagePortal"
+      />
 
   <browser:page
       name="testzzz"

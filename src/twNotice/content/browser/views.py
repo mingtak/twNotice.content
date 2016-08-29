@@ -162,6 +162,27 @@ class ReindexNoticeTimes(BrowserView):
                 self.logger.info('Count: %s' % count)
 
 
+class ContentAmount(BrowserView):
+    """ Content Amount
+    """
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+        alsoProvides(request, IDisableCSRFProtection)
+
+        noticeFolder = portal['notice']
+#        catalog = context.portal_catalog
+
+        result = ''
+        for year in noticeFolder.getChildNodes():  # year
+            for month in year.getChildNodes():  # month
+#                import pdb; pdb.set_trace()
+                result += '%s/%s: %s\n' % (year.id, month.id, month.objectCount())
+        return result
+
+
 class TestZZZ(BrowserView):
     """ TestZZZ
     """
