@@ -131,6 +131,7 @@ class ImportNotice(BrowserView, BaseMethod):
 
             self.getPage(url=noticeURL, id=id)
             if os.path.exists('/tmp/%s' % id):
+                logger.info('加1, %s' % noticeURL)
                 filename.append(id)
             else:
                 continue

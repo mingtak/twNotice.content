@@ -41,8 +41,13 @@ class BaseMethod():
         while True:
             try:
                 responDoc = self.session.get(url, timeout=3)
+                if not responDoc:
+                    logger.error('值錯誤: 空值, %d' % url)
+                    raise ValueError()
+                logger.info('有內容, %s' % url)
                 return responDoc.text
             except:
+                logger.error('第 46 行')
                 if errCount >= 5:
                     logger.info('洋蔥失敗5次, %s' % url)
 #                    import pdb; pdb.set_trace()
@@ -105,6 +110,8 @@ class BaseMethod():
 
         htmlDoc = self.sessionGet(url)
         if not htmlDoc:
+            logger.error('第 109 行, %s' % url)
+#            import pdb; pdb.set_trace()
             return
 
         noticeSoup = BeautifulSoup(htmlDoc, 'lxml')
@@ -113,18 +120,21 @@ class BaseMethod():
             title = noticeSoup.find('th', class_='T11b', text='標案名稱').find_next_sibling('td').get_text().strip()
             noticeType = noticeSoup.h1.get_text() if noticeSoup.h1 else noticeSoup.find('td', class_='T11c').get_text()
         except:
+            logger.error('第 117 行, %s' % url)
             self.sendErrLog(2, url)
 #            logger.error('at getPage, %s' % url)
             return
         try:
             cpc = re.findall('[0-9]+', noticeSoup.find('th', text='標的分類').find_next_sibling('td').get_text())[0]
         except:
+            logger.error('第 124 行, %s' % url)
             cpc = None
 
         intIds = component.getUtility(IIntIds)
         try:
             cpcObject = api.content.find(Type='CPC', id=cpc)[0].getObject()
         except:
+            logger.error('第 131 行, %s' % url)
             cpcObject = None
 
         notice = {
@@ -177,6 +187,7 @@ class ImportRecent(BrowserView, BaseMethod):
             url = link
             htmlDoc = self.getList(url=url)
         except:
+            logger.error('第 184 行')
             self.sendErrLog(3, url)
 #            logger.error("網站無回應或被擋了 %s" % url)
             return
@@ -233,6 +244,7 @@ class ImportRecent(BrowserView, BaseMethod):
                 )
                 api.content.transition(obj=noticeObject, transition='publish')
             except:
+                logger.error('第 241 行')
                 continue
 #            transaction.commit()
             if notice.has_key('id'):
@@ -252,7 +264,9 @@ class ImportRecent(BrowserView, BaseMethod):
             itemCount += 1
             try:
                 notify(ObjectModifiedEvent(noticeObject))
-            except:pass
+            except:
+                logger.error('第 262 行')
+                pass
             if itemCount % 5 == 0:
                 transaction.commit()
         logger.info('%s finish!' % ds)
