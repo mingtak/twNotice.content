@@ -4,9 +4,9 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
 from plone import api
 from DateTime import DateTime
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import font_manager
+#import matplotlib.pyplot as plt
+#import numpy as np
+#from matplotlib import font_manager
 #from plone.memoize import ram
 #from time import time
 from Products.CMFPlone.utils import safe_unicode
