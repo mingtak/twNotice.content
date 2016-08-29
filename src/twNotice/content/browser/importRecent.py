@@ -56,7 +56,7 @@ class BaseMethod():
                    errCount +=1
                 logger.info('洋蔥失敗%s次, %s' % (errCount, url))
                 os.system('sudo service tor reload')
-                time.sleep(2)
+                time.sleep(1)
 #                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
 
