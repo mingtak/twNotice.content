@@ -36,6 +36,25 @@ class BaseMethod():
     #Use Tor for both HTTP and HTTPS
     session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
 
+
+    def reloadTor(self):
+#        import pdb; pdb.set_trace()
+        currentTime = int(DateTime().strftime('%s'))
+        if os.path.exists('/tmp/reloadTorTime'):
+            with open('/tmp/reloadTorTime') as file:
+                lastTime = pickle.load(file)
+                if (currentTime - lastTime) < 10:
+                    logger.info('未滿10秒')
+                    time.sleep(1)
+                    return
+
+        with open('/tmp/reloadTorTime', 'w') as file:
+            os.system('sudo service tor reload')
+            pickle.dump(currentTime, file)
+            logger.info('已滿10秒')
+            time.sleep(2)
+        return
+
     def sessionGet(self, url):
         errCount = 0
         while True:
@@ -55,8 +74,10 @@ class BaseMethod():
                 else:
                    errCount +=1
                 logger.info('洋蔥失敗%s次, %s' % (errCount, url))
-                os.system('sudo service tor reload')
-                time.sleep(2)
+
+                self.reloadTor()
+#                os.system('sudo service tor reload')
+#                time.sleep(2)
 #                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
 
@@ -287,8 +308,9 @@ class ImportRecent(BrowserView, BaseMethod):
 
         logger.info('開始')
         # 配合 visudo
-        os.system('sudo service tor reload')
-        time.sleep(2)
+        self.reloadTor()
+#        os.system('sudo service tor reload')
+#        time.sleep(2)
         link = TODAY_URL
         ds = DateTime().strftime('%Y%m%d')
         self.importNotice(link, ds)
