@@ -3,7 +3,8 @@ from Products.Five.browser import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
 from plone import api
-import requesocks
+import requests
+# import requesocks
 import csv
 from bs4 import BeautifulSoup
 from z3c.relationfield.relation import RelationValue
@@ -32,34 +33,22 @@ TODAY_URL = 'http://web.pcc.gov.tw/pishtml/todaytender.html'
 class BaseMethod():
     """ BaseMethod
     """
-    session = requesocks.session()
+#    session = requesocks.session()
+    session = requests.session()
     #Use Tor for both HTTP and HTTPS
     session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
 
 
     def reloadTor(self):
-#        import pdb; pdb.set_trace()
-        currentTime = int(DateTime().strftime('%s'))
-        if os.path.exists('/tmp/reloadTorTime'):
-            with open('/tmp/reloadTorTime') as file:
-                lastTime = pickle.load(file)
-                if (currentTime - lastTime) < 10:
-                    logger.info('未滿10秒')
-                    time.sleep(1)
-                    return
-
-        with open('/tmp/reloadTorTime', 'w') as file:
-            os.system('sudo service tor reload')
-            pickle.dump(currentTime, file)
-            logger.info('已滿10秒')
-            time.sleep(2)
+        os.system('sudo service tor reload')
         return
+
 
     def sessionGet(self, url):
         errCount = 0
         while True:
             try:
-                responDoc = self.session.get(url, timeout=3)
+                responDoc = self.session.get(url, timeout=2)
                 if not responDoc:
                     logger.error('值錯誤: 空值, %d' % url)
                     raise ValueError()
@@ -67,18 +56,15 @@ class BaseMethod():
                 return responDoc.text
             except:
                 logger.error('第 46 行')
-                if errCount >= 5:
-                    logger.info('洋蔥失敗5次, %s' % url)
-#                    import pdb; pdb.set_trace()
+                if errCount >= 20:
+                    logger.info('洋蔥失敗 %s 次, %s' % (errCount, url))
+                    time.sleep(5)
                     return ''
                 else:
                    errCount +=1
-                logger.info('洋蔥失敗%s次, %s' % (errCount, url))
 
+                logger.info('洋蔥失敗 %s 次, %s' % (errCount, url))
                 self.reloadTor()
-#                os.system('sudo service tor reload')
-#                time.sleep(2)
-#                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
 
 
@@ -132,7 +118,6 @@ class BaseMethod():
         htmlDoc = self.sessionGet(url)
         if not htmlDoc:
             logger.error('第 109 行, %s' % url)
-#            import pdb; pdb.set_trace()
             return
 
         noticeSoup = BeautifulSoup(htmlDoc, 'lxml')
@@ -143,7 +128,6 @@ class BaseMethod():
         except:
             logger.error('第 117 行, %s' % url)
             self.sendErrLog(2, url)
-#            logger.error('at getPage, %s' % url)
             return
         try:
             cpc = re.findall('[0-9]+', noticeSoup.find('th', text='標的分類').find_next_sibling('td').get_text())[0]
@@ -168,14 +152,11 @@ class BaseMethod():
         if cpcObject:
             notice['cpc'] = RelationValue(intIds.getId(cpcObject))
 
-#        logger.info(id)
         for th in all_th:
             if notice.has_key(th.get_text().strip()):
                 keyIndex = 1
-#                logger.info(th.get_text().strip())
                 while True:
                     newKey = u'%s_%s' % (th.get_text().strip(), keyIndex)
-#                    logger.info('newkey: %s, %s' % (newKey, notice.has_key(newKey)))
                     if notice.has_key(newKey):
                         keyIndex += 1
                     else:
@@ -213,7 +194,6 @@ class ImportRecent(BrowserView, BaseMethod):
 #            logger.error("網站無回應或被擋了 %s" % url)
             return
 
-#        soup = BeautifulSoup(htmlDoc.read(), 'lxml')
         soup = BeautifulSoup(htmlDoc, 'lxml')
 
         filename = []
@@ -303,14 +283,11 @@ class ImportRecent(BrowserView, BaseMethod):
         response = request.response
         catalog = context.portal_catalog
         portal = api.portal.get()
-#        intIds = component.getUtility(IIntIds)
         alsoProvides(request, IDisableCSRFProtection)
 
         logger.info('開始')
         # 配合 visudo
         self.reloadTor()
-#        os.system('sudo service tor reload')
-#        time.sleep(2)
         link = TODAY_URL
         ds = DateTime().strftime('%Y%m%d')
         self.importNotice(link, ds)

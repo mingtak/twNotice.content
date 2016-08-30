@@ -170,8 +170,6 @@ class ImportNotice(BrowserView, BaseMethod):
         if request.form.get('url'):
             # 配合 visudo
             self.reloadTor()
-#            os.system('sudo service tor reload')
-#            time.sleep(2)
             link = request.form.get('url') # 條件未依需求修改
             ds = request.form.get('ds')
             searchMode = request.form.get('searchMode')
@@ -188,8 +186,6 @@ class ImportNotice(BrowserView, BaseMethod):
                     logger.info('This line is %s' % line)
                     try:
                         self.reloadTor()
-#                        os.system('sudo service tor reload')
-#                        time.sleep(2)
                         link = line.split('&ds=')[0]
                         ds = line.split('&ds=')[1].strip()
                         searchMode = 'common' if 'searchMode' in line else None
