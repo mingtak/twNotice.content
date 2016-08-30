@@ -56,7 +56,7 @@ class BaseMethod():
                    errCount +=1
                 logger.info('洋蔥失敗%s次, %s' % (errCount, url))
                 os.system('sudo service tor reload')
-                time.sleep(1)
+                time.sleep(2)
 #                logger.info('洋蔥重啟_%s, %s' % (errCount, url))
                 continue
 
@@ -205,7 +205,10 @@ class ImportRecent(BrowserView, BaseMethod):
 
             noticeURL = "http://web.pcc.gov.tw%s" % url
 
+            logger.info('==> %s' % noticeURL)
+
             if catalog(noticeURL=noticeURL):
+                logger.info('有了 %s' % noticeURL)
                 continue
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
 
