@@ -47,7 +47,7 @@ class BaseMethod():
         errCount = 0
         while True:
             try:
-                responDoc = session.get(url, headers=GET_HEADERS, timeout=(2, 15))
+                responDoc = session.get(url, headers=GET_HEADERS, timeout=(10, 15))
                 if not responDoc:
                     #logger.error('值錯誤: 空值, %s' % url)
                     raise ValueError()
@@ -60,7 +60,7 @@ class BaseMethod():
             except ConnectTimeout:
                 logger.error('第 46 行')
                 try:
-                    responDoc = session.get(url, headers=GET_HEADERS, timeout=(10,20))
+                    responDoc = session.get(url, headers=GET_HEADERS, timeout=(15,20))
                     #logger.info('Timeout之後有內容, %s' % url)
                     return responDoc.text
                 except:
