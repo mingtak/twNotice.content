@@ -130,6 +130,9 @@ class ImportNotice(BrowserView, BaseMethod):
 
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
 
+            if len(noticeURL) < 50:
+                logger.info('值太短不處理 %s, %s' % (noticeURL, len(noticeURL)))
+                continue # 網址太短表示有問題，不浪費時間
             self.getPage(url=noticeURL, id=id)
             if os.path.exists('/tmp/%s' % id):
                 filename.append(id)
@@ -139,7 +142,7 @@ class ImportNotice(BrowserView, BaseMethod):
             itemCount += 1
             logger.info('加 %s, %s' % (itemCount % 10, noticeURL))
             if itemCount % 10 == 0:
-                logger.info('Start Creat Contents: %s' % itemCount)
+                logger.info('Start Create Contents: %s' % itemCount)
                 if itemCount % 200 == 0:
                     api.portal.send_email(
                         recipient='andy@mingtak.com.tw',
@@ -152,7 +155,7 @@ class ImportNotice(BrowserView, BaseMethod):
                 filename = []
 
         # 最後不足 200 要再做一次
-        logger.info('Start Creat Contents: %s' % itemCount)
+        logger.info('Start Create Contents: %s' % itemCount)
         self.createContents(filename, container, ds)
         logger.info('%s finish!' % ds)
         self.reportResult(ds, container)

@@ -4,6 +4,7 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
 from plone import api
 import requests
+from requests import ConnectionError, ConnectTimeout
 # import requesocks
 import csv
 from bs4 import BeautifulSoup
@@ -17,7 +18,7 @@ import transaction
 import logging
 import time
 from Products.CMFPlone.utils import safe_unicode
-#from ..config import GET_HEADERS, NOTICE_SCOPE
+from ..config import GET_HEADERS #, NOTICE_SCOPE
 import re
 import os
 import random
@@ -46,24 +47,30 @@ class BaseMethod():
         errCount = 0
         while True:
             try:
-                responDoc = session.get(url, timeout=2)
+                responDoc = session.get(url, headers=GET_HEADERS, timeout=(2, 15))
                 if not responDoc:
-                    logger.error('值錯誤: 空值, %d' % url)
+                    #logger.error('值錯誤: 空值, %s' % url)
                     raise ValueError()
-                logger.info('有內容, %s' % url)
+                #logger.info('有內容, %s' % url)
                 return responDoc.text
-            except:
-                logger.error('第 46 行')
-                if errCount >= 10:
-                    logger.info('洋蔥失敗 %s 次, %s' % (errCount, url))
-                    time.sleep(5)
-                    return ''
-                else:
-                   errCount +=1
-
-                logger.info('洋蔥失敗 %s 次, %s' % (errCount, url))
+            except ConnectionError():
+                #logger.info('注意！ConnectionError, %s' % url)
                 self.reloadTor()
                 continue
+            except ConnectTimeout:
+                logger.error('第 46 行')
+                try:
+                    responDoc = session.get(url, headers=GET_HEADERS, timeout=(10,20))
+                    #logger.info('Timeout之後有內容, %s' % url)
+                    return responDoc.text
+                except:
+                    self.reloadTor()
+                    #logger.info('洋蔥失敗, %s' % url)
+                    return ''
+            except:
+                self.reloadTor()
+                #logger.info('其他錯誤, %s' % url)
+                return ''
 
 
     def reportResult(self, ds, container):
