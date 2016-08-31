@@ -95,6 +95,7 @@ class BaseMethod():
         while True:
             try:
                 responDoc = session.get(url, headers=GET_HEADERS, timeout=(3, 20))
+                logger.info('98行狀態碼: %s' % responDoc.status_code)
                 if not responDoc:
                     #logger.error('值錯誤: 空值, %s' % url)
                     raise ValueError()
@@ -102,8 +103,13 @@ class BaseMethod():
                 return responDoc.text
             except ConnectionError:
                 logger.info('注意！ConnectionError, %s' % url)
-                self.reloadTor()
-                continue
+                try:
+                    responDoc = requests.get(url, headers=GET_HEADERS)
+                    logger.info('108行狀態碼: %s' % responDoc.status_code)
+                    return responDoc.text
+                except:
+                    self.reloadTor()
+                    continue
             except ConnectTimeout:
                 logger.error('第 46 行')
                 self.reloadTor()
