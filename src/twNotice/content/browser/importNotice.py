@@ -124,19 +124,20 @@ class ImportNotice(BrowserView, BaseMethod):
             if 'twjavascript' in noticeURL:
                 continue
 
-            if catalog(noticeURL=noticeURL):
+#            if catalog(noticeURL=noticeURL):
+            if api.content.find(context=portal['notice'][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
                 continue
 
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
 
             self.getPage(url=noticeURL, id=id)
             if os.path.exists('/tmp/%s' % id):
-                logger.info('加1, %s' % noticeURL)
                 filename.append(id)
             else:
                 continue
 
             itemCount += 1
+            logger.info('加 %s, %s' % (itemCount % 10, noticeURL))
             if itemCount % 10 == 0:
                 logger.info('Start Creat Contents: %s' % itemCount)
                 if itemCount % 200 == 0:

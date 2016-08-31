@@ -17,7 +17,7 @@ import transaction
 import logging
 import time
 from Products.CMFPlone.utils import safe_unicode
-from ..config import GET_HEADERS, NOTICE_SCOPE
+#from ..config import GET_HEADERS, NOTICE_SCOPE
 import re
 import os
 import random
@@ -33,11 +33,6 @@ TODAY_URL = 'http://web.pcc.gov.tw/pishtml/todaytender.html'
 class BaseMethod():
     """ BaseMethod
     """
-#    session = requesocks.session()
-    session = requests.session()
-    #Use Tor for both HTTP and HTTPS
-    session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
-
 
     def reloadTor(self):
         os.system('sudo service tor reload')
@@ -45,10 +40,13 @@ class BaseMethod():
 
 
     def sessionGet(self, url):
+        session = requests.session()
+        session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
+
         errCount = 0
         while True:
             try:
-                responDoc = self.session.get(url, timeout=2)
+                responDoc = session.get(url, timeout=2)
                 if not responDoc:
                     logger.error('值錯誤: 空值, %d' % url)
                     raise ValueError()
@@ -56,7 +54,7 @@ class BaseMethod():
                 return responDoc.text
             except:
                 logger.error('第 46 行')
-                if errCount >= 20:
+                if errCount >= 10:
                     logger.info('洋蔥失敗 %s 次, %s' % (errCount, url))
                     time.sleep(5)
                     return ''
@@ -208,7 +206,7 @@ class ImportRecent(BrowserView, BaseMethod):
 
             logger.info('==> %s' % noticeURL)
 
-            if catalog(noticeURL=noticeURL):
+            if api.content.find(context=portal['recent'][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
                 logger.info('有了 %s' % noticeURL)
                 continue
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
