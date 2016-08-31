@@ -94,18 +94,21 @@ class BaseMethod():
         errCount = 0
         while True:
             try:
-                responDoc = session.get(url, headers=GET_HEADERS, timeout=(10, 15))
+                responDoc = session.get(url, headers=GET_HEADERS, timeout=(3, 20))
                 if not responDoc:
                     #logger.error('值錯誤: 空值, %s' % url)
                     raise ValueError()
                 #logger.info('有內容, %s' % url)
                 return responDoc.text
-            except ConnectionError():
-                #logger.info('注意！ConnectionError, %s' % url)
+            except ConnectionError:
+                logger.info('注意！ConnectionError, %s' % url)
                 self.reloadTor()
                 continue
             except ConnectTimeout:
                 logger.error('第 46 行')
+                self.reloadTor()
+                continue
+                # 試試看只換ip
                 try:
                     responDoc = session.get(url, headers=GET_HEADERS, timeout=(15,20))
                     #logger.info('Timeout之後有內容, %s' % url)
