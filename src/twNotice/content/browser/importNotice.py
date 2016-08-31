@@ -36,53 +36,6 @@ class ImportNotice(BrowserView, BaseMethod):
     """ Import Notice
     """
 
-    def createContents(self, filename, container, ds):
-        itemCount = 0
-        for item in filename:
-            try:
-                with open('/tmp/%s' % item) as file:
-                    notice = pickle.load(file)
-                os.remove('/tmp/%s' % item)
-                noticeObject = api.content.create(
-                    type='Notice',
-                    container=container,
-                    id=notice['id'],
-                    title=notice['title'],
-                    noticeType=notice.get('noticeType'),
-                    noticeURL=notice.get('noticeURL'),
-                    dateString=ds,
-                    cpc=notice.get('cpc'),
-                )
-                api.content.transition(obj=noticeObject, transition='publish')
-            except:
-                logger.error('line 58')
-                continue
-#            transaction.commit()
-            if notice.has_key('id'):
-                notice.pop('id')
-            if notice.has_key('title'):
-                notice.pop('title')
-            if notice.has_key('noticeType'):
-                notice.pop('noticeType')
-            if notice.has_key('noticeURL'):
-                notice.pop('noticeURL')
-            if notice.has_key('cpc'):
-                notice.pop('cpc')
-            noticeObject.noticeMeta = {}
-            for key in notice.keys():
-                noticeObject.noticeMeta[key] = notice[key]
-#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
-            itemCount += 1
-            try:
-                notify(ObjectModifiedEvent(noticeObject))
-            except:
-                logger.error('line 79')
-                pass
-
-            if itemCount % 5 == 0:
-                transaction.commit()
-
-
     def importNotice(self, link, ds, searchMode):
         context = self.context
         request = self.request

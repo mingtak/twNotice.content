@@ -35,6 +35,53 @@ class BaseMethod():
     """ BaseMethod
     """
 
+    def createContents(self, filename, container, ds):
+        itemCount = 0
+        for item in filename:
+            try:
+                with open('/tmp/%s' % item) as file:
+                    notice = pickle.load(file)
+                os.remove('/tmp/%s' % item)
+                noticeObject = api.content.create(
+                    type='Notice',
+                    container=container,
+                    id=notice['id'],
+                    title=notice['title'],
+                    noticeType=notice.get('noticeType'),
+                    noticeURL=notice.get('noticeURL'),
+                    dateString=ds,
+                    cpc=notice.get('cpc'),
+                )
+                api.content.transition(obj=noticeObject, transition='publish')
+            except:
+                logger.error('line 58')
+                continue
+#            transaction.commit()
+            if notice.has_key('id'):
+                notice.pop('id')
+            if notice.has_key('title'):
+                notice.pop('title')
+            if notice.has_key('noticeType'):
+                notice.pop('noticeType')
+            if notice.has_key('noticeURL'):
+                notice.pop('noticeURL')
+            if notice.has_key('cpc'):
+                notice.pop('cpc')
+            noticeObject.noticeMeta = {}
+            for key in notice.keys():
+                noticeObject.noticeMeta[key] = notice[key]
+#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
+            itemCount += 1
+            try:
+                notify(ObjectModifiedEvent(noticeObject))
+            except:
+                logger.error('line 79')
+                pass
+
+            if itemCount % 5 == 0:
+                transaction.commit()
+
+
     def reloadTor(self):
         os.system('sudo service tor reload')
         return
@@ -225,59 +272,22 @@ class ImportRecent(BrowserView, BaseMethod):
                 continue
 
             itemCount += 1
-            if itemCount % 200 == 0:
-                api.portal.send_email(
-                    recipient='andy@mingtak.com.tw',
-                    sender='andy@mingtak.com.tw',
-                    subject='%s Add notice: %s' % (ds, itemCount),
-                    body='As title',
-                )
+            logger.info('加 %s, %s' % (itemCount % 10, noticeURL))
+            if itemCount % 2 == 0:
+                logger.info('Start Create Contents: %s' % itemCount)
+                if itemCount % 200 == 0:
+                    api.portal.send_email(
+                        recipient='andy@mingtak.com.tw',
+                        sender='andy@mingtak.com.tw',
+                        subject='%s Add notice: %s' % (ds, itemCount),
+                        body='As title',
+                    )
+                self.createContents(filename, container, ds)
                 transaction.commit()
-        logger.info('完成')
+                filename = []
 
-        itemCount = 0
-        for item in filename:
-            try:
-                with open('/tmp/%s' % item) as file:
-                    notice = pickle.load(file)
-                os.remove('/tmp/%s' % item)
-                noticeObject = api.content.create(
-                    type='Notice',
-                    container=container,
-                    id=notice['id'],
-                    title=notice['title'],
-                    noticeType=notice.get('noticeType'),
-                    noticeURL=notice.get('noticeURL'),
-                    dateString=ds,
-                    cpc=notice.get('cpc'),
-                )
-                api.content.transition(obj=noticeObject, transition='publish')
-            except:
-                logger.error('第 241 行')
-                continue
-#            transaction.commit()
-            if notice.has_key('id'):
-                notice.pop('id')
-            if notice.has_key('title'):
-                notice.pop('title')
-            if notice.has_key('noticeType'):
-                notice.pop('noticeType')
-            if notice.has_key('noticeURL'):
-                notice.pop('noticeURL')
-            if notice.has_key('cpc'):
-                notice.pop('cpc')
-            noticeObject.noticeMeta = {}
-            for key in notice.keys():
-                noticeObject.noticeMeta[key] = notice[key]
-#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
-            itemCount += 1
-            try:
-                notify(ObjectModifiedEvent(noticeObject))
-            except:
-                logger.error('第 262 行')
-                pass
-            if itemCount % 5 == 0:
-                transaction.commit()
+        logger.info('完成')
+        self.createContents(filename, container, ds)
         logger.info('%s finish!' % ds)
         self.reportResult(ds, container)
 
