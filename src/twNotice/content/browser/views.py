@@ -13,7 +13,26 @@ from zope.security import checkPermission
 from zc.relation.interfaces import ICatalog
 from plone.protect.interfaces import IDisableCSRFProtection
 from zope.interface import alsoProvides
+#import json
+import pickle
+from freeproxy import *
 import logging
+
+
+class GetProxies(BrowserView):
+    """ Get Proxies
+    """
+    def __call__(self):
+        context = self.context
+        request = self.request
+
+        testURL = 'http://web.pcc.gov.tw/tps/tpam/main/tps/tpam/tpam_tender_detail.do?searchMode=common&scope=F&primaryKey=62081538&area=history'
+        proxies = from_cn_proxy() + from_cyber_syndrome() + from_free_proxy_list() + \
+                  from_gather_proxy() + from_get_proxy() + from_hide_my_ip() + \
+                  from_pachong_org() + from_proxy_spy() + from_xici_daili()
+        usable = test_proxies(proxies, timeout=10, single_url=testURL)
+        with open('/tmp/proxies', 'w') as file:
+            pickle.dump(usable, file)
 
 
 class BidderInfo(BrowserView):

@@ -35,6 +35,11 @@ class ImportNotice(BrowserView, BaseMethod):
     """ Import Notice
     """
 
+#### proxy = urllib2.ProxyHandler({'http': aaa[15]})
+# opener = urllib2.build_opener(proxy)
+# opener.addheaders = URLLIB2_HEADER
+# urllib2.install_opener(opener)
+
     def importNotice(self, link, ds, searchMode):
         context = self.context
         request = self.request
@@ -43,12 +48,17 @@ class ImportNotice(BrowserView, BaseMethod):
         portal = api.portal.get()
         intIds = component.getUtility(IIntIds)
 
+        while True:
+            proxies = self.getProxies()
+            if proxies:
+                break
+
         # 先確認folder
         container = self.getFolder(ds=ds, container=portal['notice'])
         # 取得公告首頁
         try:
             url = link # 條件未依需求修改
-            htmlDoc = self.getList(url='%s&ds=%s' % (url, ds))
+            htmlDoc = self.getList(url='%s&ds=%s' % (url, ds), proxies=proxies)
         except:
             logger.error('line 101')
             self.sendErrLog(3, url)
@@ -58,8 +68,6 @@ class ImportNotice(BrowserView, BaseMethod):
 #        soup = BeautifulSoup(htmlDoc.read(), 'lxml')
         soup = BeautifulSoup(htmlDoc, 'lxml')
 
-        filename = []
-        itemCount = 0
         for item in soup.find_all('a', class_='tenderLink'):
             # 排除時間，暫用，之後移到configlet
             if DateTime().hour() in [3, 23]:
@@ -76,7 +84,6 @@ class ImportNotice(BrowserView, BaseMethod):
             if 'twjavascript' in noticeURL:
                 continue
 
-#            if catalog(noticeURL=noticeURL):
             if api.content.find(context=portal['notice'][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
                 continue
 
@@ -94,31 +101,16 @@ class ImportNotice(BrowserView, BaseMethod):
                 logger.info('非標案公告不處理 %s' % noticeURL)
                 continue # 網址太短表示有問題，不浪費時間
 
-            self.getPage(url=noticeURL, id=id)
-            if os.path.exists('/tmp/%s' % id):
-                filename.append(id)
-            else:
-                continue
+            proxy = proxies.pop(0)
+            proxies.append(proxy)
 
-            itemCount += 1
-#            logger.info('加 %s, %s' % (itemCount % 10, noticeURL))
-            if itemCount % 2 == 0:
-                logger.info('Start Create Contents: %s' % itemCount)
-                if itemCount % 200 == 0:
-                    api.portal.send_email(
-                        recipient='andy@mingtak.com.tw',
-                        sender='andy@mingtak.com.tw',
-                        subject='%s Add notice: %s' % (ds, itemCount),
-                        body='As title',
-                    )
-                self.createContents(filename, container, ds)
-                transaction.commit()
-                filename = []
-
-        # 最後不足 200 要再做一次
-        logger.info('Start Create Contents: %s' % itemCount)
-        self.createContents(filename, container, ds)
-        logger.info('%s finish!' % ds)
+            noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
+            os.system('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=notice&noticeURL=%s" &' % \
+                (portal.absolute_url(), id, ds, proxy, noticeURL))
+            logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
+            #TODO 休息多久，可以區分尖峰時間
+            time.sleep(3)
+        logger.info('%s 完成!' % ds)
         self.reportResult(ds, container)
 
 

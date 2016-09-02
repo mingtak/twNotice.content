@@ -4,6 +4,7 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
 from plone import api
 import requests
+import urllib2
 from requests import ConnectionError, ConnectTimeout
 import csv
 from bs4 import BeautifulSoup
@@ -17,13 +18,14 @@ import transaction
 import logging
 import time
 from Products.CMFPlone.utils import safe_unicode
-from ..config import GET_HEADERS
+from ..config import GET_HEADERS, URLLIB2_HEADER
 import re
 import os
 import random
 import pickle
 from plone.protect.interfaces import IDisableCSRFProtection
 from zope.interface import alsoProvides
+#from freeproxy import *
 
 
 logger = logging.getLogger("IMPORT_RECENT")
@@ -33,6 +35,12 @@ TODAY_URL = 'http://web.pcc.gov.tw/pishtml/todaytender.html'
 class BaseMethod():
     """ BaseMethod
     """
+
+    def getProxies(self):
+        with open('/tmp/proxies') as file:
+            usable = pickle.load(file)
+        return usable
+
 
     def createContents(self, filename, container, ds):
         itemCount = 0
@@ -69,15 +77,12 @@ class BaseMethod():
             for key in notice.keys():
                 noticeObject.noticeMeta[key] = notice[key]
 #            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
-            itemCount += 1
             try:
                 notify(ObjectModifiedEvent(noticeObject))
             except:
                 logger.error('line 79')
                 pass
-
-            if itemCount % 5 == 0:
-                transaction.commit()
+            transaction.commit()
 
 
     def reloadTor(self):
@@ -85,31 +90,29 @@ class BaseMethod():
         return
 
 
-    def sessionGet(self, url):
-        session = requests.session()
-        session.proxies = {'http': 'socks5://localhost:9050', 'https': 'socks5://localhost:9050'}
+    def sessionGet(self, url, proxies):
+        if type(proxies) != type([]):
+            proxies = [proxies]
 
-        errCount = 0
-        while True:
+        timeout = 12 if len(proxies)>1 else 30
+        for item in proxies:
+            logger.info('PROXY: %s' % item)
+            proxy = urllib2.ProxyHandler({'http': item})
+            opener = urllib2.build_opener(proxy)
+            opener.addheaders = URLLIB2_HEADER
+            urllib2.install_opener(opener)
+
             try:
-                responDoc = session.get(url, headers=GET_HEADERS, timeout=(3, 5))
-                if not responDoc:
-                    #logger.error('值錯誤: 空值, %s' % url)
-                    raise ValueError()
-#                time.sleep(1)
-                return responDoc.text
-            except ConnectionError:
-                logger.info('注意！ConnectionError, %s' % url)
-                self.reloadTor()
-                continue
-            except ConnectTimeout:
-                logger.error('第 46 行')
-                self.reloadTor()
-                continue
+                responDoc = ''
+                responDoc = urllib2.urlopen(url, timeout=timeout).read()
+                if responDoc:
+                    return responDoc
+                else:
+                    continue
             except:
-                self.reloadTor()
-                logger.info('其他錯誤, %s' % url)
-                return ''
+                logger.info('有錯誤, %s' % url)
+                continue
+        return ''
 
 
     def reportResult(self, ds, container):
@@ -152,14 +155,14 @@ class BaseMethod():
         return container[year][month][day]
 
 
-    def getList(self,url):
-        return self.sessionGet(url)
+    def getList(self, url, proxies):
+        return self.sessionGet(url, proxies)
 
 
-    def getPage(self, url, id):
+    def getPage(self, url, id, proxies):
         portal = api.portal.get()
 
-        htmlDoc = self.sessionGet(url)
+        htmlDoc = self.sessionGet(url, proxies)
         if not htmlDoc:
             logger.error('第 109 行, %s' % url)
             return
@@ -214,6 +217,38 @@ class BaseMethod():
         return
 
 
+class GetPage(BrowserView, BaseMethod):
+    """ Get page """
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        response = request.response
+        catalog = context.portal_catalog
+        portal = api.portal.get()
+        alsoProvides(request, IDisableCSRFProtection)
+
+        noticeURL = request.form.get('noticeURL').replace('ZZZZZZZ', '&')
+        proxy = request.form.get('proxy')
+        folder = request.form.get('folder')
+        id = request.form.get('id')
+        ds = request.form.get('ds')
+        if noticeURL and proxy and folder and id and ds:
+            pass
+        else:
+            return
+
+        self.getPage(url=noticeURL, id=id, proxies=proxy)
+        logger.info('url: %s' % noticeURL)
+
+        if os.path.exists('/tmp/%s' % id):
+            with api.env.adopt_roles(['Manager']):
+                container = self.getFolder(ds=ds, container=portal[folder])
+                self.createContents([id], container, ds)
+                transaction.commit()
+                logger.info('新增完成，請檢查: %s, %s / %s' % (folder, ds, id))
+
+
 class ImportRecent(BrowserView, BaseMethod):
     """ Import Recent
     """
@@ -226,12 +261,18 @@ class ImportRecent(BrowserView, BaseMethod):
         portal = api.portal.get()
         intIds = component.getUtility(IIntIds)
 
+        while True:
+            proxies = self.getProxies()
+            if proxies:
+                break
+
+        folder = 'recent'
         # 先確認folder
-        container = self.getFolder(ds=ds, container=portal['recent'])
+        container = self.getFolder(ds=ds, container=portal[folder])
         # 取得公告首頁
         try:
             url = link
-            htmlDoc = self.getList(url=url)
+            htmlDoc = self.getList(url=url, proxies=proxies)
         except:
             logger.error('第 184 行')
             self.sendErrLog(3, url)
@@ -239,9 +280,6 @@ class ImportRecent(BrowserView, BaseMethod):
             return
 
         soup = BeautifulSoup(htmlDoc, 'lxml')
-
-        filename = []
-        itemCount = 0
 
         for item in soup.find_all('a'):
             if 'detail' not in item.get('href', ''):
@@ -252,35 +290,22 @@ class ImportRecent(BrowserView, BaseMethod):
 
             logger.info('==> %s' % noticeURL)
 
-            if api.content.find(context=portal['recent'][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
+            if api.content.find(context=portal[folder][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
                 logger.info('有了 %s' % noticeURL)
                 continue
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
 
-            self.getPage(url=noticeURL, id=id)
-            if os.path.exists('/tmp/%s' % id):
-                filename.append(id)
-            else:
-                continue
+            proxy = proxies.pop(0)
+            proxies.append(proxy)
 
-            itemCount += 1
-            logger.info('加 %s, %s' % (itemCount % 10, noticeURL))
-            if itemCount % 2 == 0:
-                logger.info('Start Create Contents: %s' % itemCount)
-                if itemCount % 200 == 0:
-                    api.portal.send_email(
-                        recipient='andy@mingtak.com.tw',
-                        sender='andy@mingtak.com.tw',
-                        subject='%s Add notice: %s' % (ds, itemCount),
-                        body='As title',
-                    )
-                self.createContents(filename, container, ds)
-                transaction.commit()
-                filename = []
+            noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
+            os.system('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s" &' % \
+                (portal.absolute_url(), id, ds, proxy, folder, noticeURL))
+            logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
+            #TODO 休息多久，可以區分尖峰時間
+            time.sleep(3)
 
-        logger.info('完成')
-        self.createContents(filename, container, ds)
-        logger.info('%s finish!' % ds)
+        logger.info('%s 完成!' % ds)
         self.reportResult(ds, container)
 
 

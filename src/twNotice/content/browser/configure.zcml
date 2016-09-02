@@ -189,6 +189,19 @@
       permission="cmf.ManagePortal"
       />
 
+  <browser:page
+      name="get_proxies"
+      for="*"
+      class=".views.GetProxies"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
+      name="get_page"
+      for="*"
+      class=".importRecent.GetPage"
+      permission="zope2.View"
+      />
 
   <!-- configlet -->
   <browser:page
