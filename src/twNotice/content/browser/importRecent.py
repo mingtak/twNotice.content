@@ -94,7 +94,7 @@ class BaseMethod():
         if type(proxies) != type([]):
             proxies = [proxies]
 
-        timeout = 12 if len(proxies)>1 else 30
+        timeout = 8 if len(proxies)>1 else 20
         for item in proxies:
             logger.info('PROXY: %s' % item)
             proxy = urllib2.ProxyHandler({'http': item})
@@ -105,6 +105,7 @@ class BaseMethod():
             try:
                 responDoc = ''
                 responDoc = urllib2.urlopen(url, timeout=timeout).read()
+                logger.info('下載ok, %s' % url)
                 if responDoc:
                     return responDoc
                 else:
@@ -121,6 +122,9 @@ class BaseMethod():
         day = ds [6:8]
         portal = api.portal.get()
         count = len(container.getChildNodes())
+        # 先不發mail
+        logger.info('完成，日期：%s, Count: %s' % (ds, count))
+        return
 
         api.portal.send_email(recipient='andy@mingtak.com.tw',
             sender='andy@mingtak.com.tw',
@@ -238,15 +242,17 @@ class GetPage(BrowserView, BaseMethod):
         else:
             return
 
+        logger.info('url: %s 開始' % noticeURL)
         self.getPage(url=noticeURL, id=id, proxies=proxy)
-        logger.info('url: %s' % noticeURL)
+        logger.info('url: %s get完成' % noticeURL)
 
         if os.path.exists('/tmp/%s' % id):
+            logger.info('url: %s 新增開始' % noticeURL)
             with api.env.adopt_roles(['Manager']):
                 container = self.getFolder(ds=ds, container=portal[folder])
                 self.createContents([id], container, ds)
                 transaction.commit()
-                logger.info('新增完成，請檢查: %s, %s / %s' % (folder, ds, id))
+                logger.info('新增完成，請檢查: %s, %s, %s / %s' % (folder, ds, id, noticeURL))
 
 
 class ImportRecent(BrowserView, BaseMethod):
@@ -306,7 +312,7 @@ class ImportRecent(BrowserView, BaseMethod):
             time.sleep(3)
 
         logger.info('%s 完成!' % ds)
-        self.reportResult(ds, container)
+#        self.reportResult(ds, container)
 
 
     def __call__(self):

@@ -48,6 +48,8 @@ class ImportNotice(BrowserView, BaseMethod):
         portal = api.portal.get()
         intIds = component.getUtility(IIntIds)
 
+        testCount = int(request.form.get('testCount', 10))
+        logger.info('testCount: %s' % testCount)
         while True:
             proxies = self.getProxies()
             if proxies:
@@ -68,6 +70,8 @@ class ImportNotice(BrowserView, BaseMethod):
 #        soup = BeautifulSoup(htmlDoc.read(), 'lxml')
         soup = BeautifulSoup(htmlDoc, 'lxml')
 
+        itemCount = 0
+        logger.info('for loop 開始')
         for item in soup.find_all('a', class_='tenderLink'):
             # 排除時間，暫用，之後移到configlet
             if DateTime().hour() in [3, 23]:
@@ -109,7 +113,12 @@ class ImportNotice(BrowserView, BaseMethod):
                 (portal.absolute_url(), id, ds, proxy, noticeURL))
             logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
             #TODO 休息多久，可以區分尖峰時間
-            time.sleep(3)
+            time.sleep(30)
+
+            itemCount += 1
+            if itemCount == testCount:
+                logger.info('先測 %s 筆' % itemCount)
+                break
         logger.info('%s 完成!' % ds)
         self.reportResult(ds, container)
 
