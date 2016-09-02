@@ -5,7 +5,6 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from plone import api
 import requests
 from requests import ConnectionError, ConnectTimeout
-# import requesocks
 import csv
 from bs4 import BeautifulSoup
 from z3c.relationfield.relation import RelationValue
@@ -18,7 +17,7 @@ import transaction
 import logging
 import time
 from Products.CMFPlone.utils import safe_unicode
-from ..config import GET_HEADERS #, NOTICE_SCOPE
+from ..config import GET_HEADERS
 import re
 import os
 import random
@@ -56,7 +55,6 @@ class BaseMethod():
             except:
                 logger.error('line 58')
                 continue
-#            transaction.commit()
             if notice.has_key('id'):
                 notice.pop('id')
             if notice.has_key('title'):
@@ -94,38 +92,23 @@ class BaseMethod():
         errCount = 0
         while True:
             try:
-                responDoc = session.get(url, headers=GET_HEADERS, timeout=(3, 20))
-                logger.info('98行狀態碼: %s' % responDoc.status_code)
+                responDoc = session.get(url, headers=GET_HEADERS, timeout=(3, 5))
                 if not responDoc:
                     #logger.error('值錯誤: 空值, %s' % url)
                     raise ValueError()
-                #logger.info('有內容, %s' % url)
+#                time.sleep(1)
                 return responDoc.text
             except ConnectionError:
                 logger.info('注意！ConnectionError, %s' % url)
-                try:
-                    responDoc = requests.get(url, headers=GET_HEADERS)
-                    logger.info('108行狀態碼: %s' % responDoc.status_code)
-                    return responDoc.text
-                except:
-                    self.reloadTor()
-                    continue
+                self.reloadTor()
+                continue
             except ConnectTimeout:
                 logger.error('第 46 行')
                 self.reloadTor()
                 continue
-                # 試試看只換ip
-                try:
-                    responDoc = session.get(url, headers=GET_HEADERS, timeout=(15,20))
-                    #logger.info('Timeout之後有內容, %s' % url)
-                    return responDoc.text
-                except:
-                    self.reloadTor()
-                    #logger.info('洋蔥失敗, %s' % url)
-                    return ''
             except:
                 self.reloadTor()
-                #logger.info('其他錯誤, %s' % url)
+                logger.info('其他錯誤, %s' % url)
                 return ''
 
 
@@ -310,8 +293,6 @@ class ImportRecent(BrowserView, BaseMethod):
         alsoProvides(request, IDisableCSRFProtection)
 
         logger.info('開始')
-        # 配合 visudo
-        self.reloadTor()
         link = TODAY_URL
         ds = DateTime().strftime('%Y%m%d')
         self.importNotice(link, ds)

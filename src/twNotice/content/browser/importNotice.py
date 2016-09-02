@@ -25,7 +25,6 @@ from plone.protect.interfaces import IDisableCSRFProtection
 from zope.interface import alsoProvides
 from twNotice.content.browser.importRecent import BaseMethod
 
-
 logger = logging.getLogger("IMPORT_NOTICE")
 
 
@@ -86,6 +85,15 @@ class ImportNotice(BrowserView, BaseMethod):
             if len(noticeURL) < 50:
                 logger.info('值太短不處理 %s, %s' % (noticeURL, len(noticeURL)))
                 continue # 網址太短表示有問題，不浪費時間
+            if '&fn=PPW' in noticeURL or \
+               '&fn=FAS' in noticeURL or \
+               '&fn=DTG' in noticeURL or \
+               '&fn=RML' in noticeURL or \
+               '&fn=FAS' in noticeURL or \
+               '&fn=FAR' in noticeURL:
+                logger.info('非標案公告不處理 %s' % noticeURL)
+                continue # 網址太短表示有問題，不浪費時間
+
             self.getPage(url=noticeURL, id=id)
             if os.path.exists('/tmp/%s' % id):
                 filename.append(id)
@@ -93,8 +101,8 @@ class ImportNotice(BrowserView, BaseMethod):
                 continue
 
             itemCount += 1
-            logger.info('加 %s, %s' % (itemCount % 10, noticeURL))
-            if itemCount % 10 == 0:
+#            logger.info('加 %s, %s' % (itemCount % 10, noticeURL))
+            if itemCount % 2 == 0:
                 logger.info('Start Create Contents: %s' % itemCount)
                 if itemCount % 200 == 0:
                     api.portal.send_email(
@@ -125,8 +133,6 @@ class ImportNotice(BrowserView, BaseMethod):
 
         logger.info('開始')
         if request.form.get('url'):
-            # 配合 visudo
-            self.reloadTor()
             link = request.form.get('url') # 條件未依需求修改
             ds = request.form.get('ds')
             searchMode = request.form.get('searchMode')
@@ -139,10 +145,8 @@ class ImportNotice(BrowserView, BaseMethod):
                     if DateTime().hour() in [3, 22, 22]:
                         return
 
-                    # 配合 visudo
                     logger.info('This line is %s' % line)
                     try:
-                        self.reloadTor()
                         link = line.split('&ds=')[0]
                         ds = line.split('&ds=')[1].strip()
                         searchMode = 'common' if 'searchMode' in line else None
