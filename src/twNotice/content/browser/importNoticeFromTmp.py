@@ -60,12 +60,12 @@ class ImportNoticeFromTmp(BrowserView):
         logger.info('新增開始')
 
         while True:
-            files = os.popen('ls /tmp/twNotice*')
+            files = os.popen('ls /tmp/twNotice*').read()
             if not files:
                 break
 
-            for filename in files:
-                filename = filename.strip()
+            for filename in files.split():
+#                filename = filename.strip()
                 with open(filename) as file:
                     notice = pickle.load(file)
 
