@@ -57,64 +57,64 @@ class ImportNoticeFromTmp(BrowserView):
         portal = api.portal.get()
         alsoProvides(request, IDisableCSRFProtection)
 
-        files = os.popen('ls /tmp/twNotice*')
-
         logger.info('新增開始')
-        for filename in files:
-            filename = filename.strip()
-            with open(filename) as file:
-                notice = pickle.load(file)
 
-            ds=notice['dateString']
-            folder = notice['folder']
-            container = portal[folder]
-            container = self.getFolder(container=container, ds=ds)
+        while True:
+            files = os.popen('ls /tmp/twNotice*')
+            if not files:
+                break
 
+            for filename in files:
+                filename = filename.strip()
+                with open(filename) as file:
+                    notice = pickle.load(file)
 
-            if api.content.find(context=container, noticeURL=notice.get('noticeURL')):
-                logger.info('有了刪掉 %s' % noticeURL)
+                ds=notice['dateString']
+                folder = notice['folder']
+                container = portal[folder]
+                container = self.getFolder(container=container, ds=ds)
+
+                if api.content.find(context=container, noticeURL=notice.get('noticeURL')):
+                    logger.info('有了刪掉 %s' % noticeURL)
+                    os.remove(filename)
+                    continue
+
+                noticeObject = api.content.create(
+                    type='Notice',
+                    container=container,
+                    id=notice['id'],
+                    title=notice['title'],
+                    noticeType=notice.get('noticeType'),
+                    noticeURL=notice.get('noticeURL'),
+                    dateString=ds,
+                    cpc=notice.get('cpc'),
+                )
+                api.content.transition(obj=noticeObject, transition='publish')
+
+                if notice.has_key('id'):
+                    notice.pop('id')
+                if notice.has_key('title'):
+                    notice.pop('title')
+                if notice.has_key('noticeType'):
+                    notice.pop('noticeType')
+                if notice.has_key('noticeURL'):
+                    notice.pop('noticeURL')
+                if notice.has_key('cpc'):
+                    notice.pop('cpc')
+                if notice.has_key('ds'):
+                    notice.pop('ds')
+                if notice.has_key('folder'):
+                    notice.pop('folder')
+
+                noticeObject.noticeMeta = {}
+                for key in notice.keys():
+                    noticeObject.noticeMeta[key] = notice[key]
+#                logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
+                try:
+                    notify(ObjectModifiedEvent(noticeObject))
+                except:
+                    logger.error('line 79')
+                    pass
+                logger.info('新增完成 %s-%s' % (ds, filename))
+                transaction.commit()
                 os.remove(filename)
-                continue
-
-            noticeObject = api.content.create(
-                type='Notice',
-                container=container,
-                id=notice['id'],
-                title=notice['title'],
-                noticeType=notice.get('noticeType'),
-                noticeURL=notice.get('noticeURL'),
-                dateString=ds,
-                cpc=notice.get('cpc'),
-            )
-            api.content.transition(obj=noticeObject, transition='publish')
-
-#            except:
-#                logger.error('line 58')
-#                continue
-            if notice.has_key('id'):
-                notice.pop('id')
-            if notice.has_key('title'):
-                notice.pop('title')
-            if notice.has_key('noticeType'):
-                notice.pop('noticeType')
-            if notice.has_key('noticeURL'):
-                notice.pop('noticeURL')
-            if notice.has_key('cpc'):
-                notice.pop('cpc')
-            if notice.has_key('ds'):
-                notice.pop('ds')
-            if notice.has_key('folder'):
-                notice.pop('folder')
-
-            noticeObject.noticeMeta = {}
-            for key in notice.keys():
-                noticeObject.noticeMeta[key] = notice[key]
-#            logger.info('OK, Budget: %s, Title: %s' % (noticeObject.noticeMeta.get(u'預算金額'), noticeObject.title))
-            try:
-                notify(ObjectModifiedEvent(noticeObject))
-            except:
-                logger.error('line 79')
-                pass
-            logger.info('新增完成 %s-%s' % (ds, filename))
-            transaction.commit()
-            os.remove(filename)

@@ -221,6 +221,8 @@ class BaseMethod():
 
         with open('/tmp/twNotice%s' % id, 'w') as file:
             pickle.dump(notice, file)
+        os.system('scp /tmp/twNotice%s playgroup@www.opptoday.com:/tmp/' % id)
+        os.remove('/tmp/twNotice%s' % id)
         return
 
 
