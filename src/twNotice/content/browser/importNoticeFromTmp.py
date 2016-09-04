@@ -62,12 +62,15 @@ class ImportNoticeFromTmp(BrowserView):
         while True:
             files = os.popen('ls /tmp/twNotice*').read()
             if not files:
-                break
+                continue
 
             for filename in files.split():
 #                filename = filename.strip()
-                with open(filename) as file:
-                    notice = pickle.load(file)
+                try:
+                    with open(filename) as file:
+                        notice = pickle.load(file)
+                except:
+                    continue
 
                 ds=notice['dateString']
                 folder = notice['folder']
@@ -75,7 +78,7 @@ class ImportNoticeFromTmp(BrowserView):
                 container = self.getFolder(container=container, ds=ds)
 
                 if api.content.find(context=container, noticeURL=notice.get('noticeURL')):
-                    logger.info('有了刪掉 %s' % noticeURL)
+                    logger.info('有了刪掉 %s' % notice.get('noticeURL'))
                     os.remove(filename)
                     continue
 
