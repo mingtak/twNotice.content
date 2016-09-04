@@ -234,14 +234,15 @@
       permission="cmf.ManagePortal"
       />
 
-<!--
+
   <browser:page
-      name="import_notice_from_folder"
+      name="import_notice_from_tmp"
       for="*"
-      class=".importNoticeFromFolder.ImportNoticeFromFolder"
+      class=".importNoticeFromTmp.ImportNoticeFromTmp"
       permission="cmf.ManagePortal"
       />
 
+<!--
   <browser:page
       name="notice_to_disk"
       for="*"

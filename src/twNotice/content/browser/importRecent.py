@@ -164,7 +164,7 @@ class BaseMethod():
         return self.sessionGet(url, proxies)
 
 
-    def getPage(self, url, id, proxies):
+    def getPage(self, url, id, proxies, folder, ds):
         portal = api.portal.get()
 
         htmlDoc = self.sessionGet(url, proxies)
@@ -199,6 +199,8 @@ class BaseMethod():
             'title':title,
             'noticeType':noticeType,
             'noticeURL':url,
+            'dateString':ds,
+            'folder':folder,
         }
 
         if cpcObject:
@@ -217,7 +219,7 @@ class BaseMethod():
             else:
                 notice[th.get_text().strip()] = th.find_next_sibling('td').get_text().strip()
 
-        with open('/tmp/%s' % id, 'w') as file:
+        with open('/tmp/twNotice%s' % id, 'w') as file:
             pickle.dump(notice, file)
         return
 
@@ -244,7 +246,7 @@ class GetPage(BrowserView, BaseMethod):
             return
 
         logger.info('url: %s 開始' % noticeURL)
-        self.getPage(url=noticeURL, id=id, proxies=proxy)
+        self.getPage(url=noticeURL, id=id, proxies=proxy, folder=folder, ds=ds)
         logger.info('url: %s get完成' % noticeURL)
 
         """ 改不在這裏新增
@@ -306,7 +308,7 @@ class ImportRecent(BrowserView, BaseMethod):
 
             proxy = random.choice(proxies)
             noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
-            os.popen('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s"' % \
+            os.system('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s"' % \
                 (portal.absolute_url(), id, ds, proxy, folder, noticeURL))
             logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
 

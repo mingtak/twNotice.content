@@ -74,8 +74,9 @@ class ImportNotice(BrowserView, BaseMethod):
         logger.info('for loop 開始')
         for item in soup.find_all('a', class_='tenderLink'):
             # 排除時間，暫用，之後移到configlet
-            if DateTime().hour() in [3, 23]:
-                break
+#            if DateTime().hour() in [3, 23]:
+#                break
+
             url = item['href']
 
             # 不刊登公報
@@ -142,8 +143,8 @@ class ImportNotice(BrowserView, BaseMethod):
                 logger.info('read file')
                 for line in file:
                     # 排除時間，暫用，之後移到configlet
-                    if DateTime().hour() in [3, 22, 22]:
-                        return
+#                    if DateTime().hour() in [3, 22, 22]:
+#                        return
 
                     logger.info('This line is %s' % line)
                     try:
