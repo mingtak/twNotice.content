@@ -105,15 +105,14 @@ class ImportNotice(BrowserView, BaseMethod):
                 logger.info('非標案公告不處理 %s' % noticeURL)
                 continue # 網址太短表示有問題，不浪費時間
 
-            proxy = proxies.pop(0)
-            proxies.append(proxy)
+            proxy = random.choice(proxies)
 
             noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
-            os.system('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=notice&noticeURL=%s" &' % \
+            os.popen('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=notice&noticeURL=%s"' % \
                 (portal.absolute_url(), id, ds, proxy, noticeURL))
             logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
             #TODO 休息多久，可以區分尖峰時間
-            time.sleep(30)
+#            time.sleep(30)
 
             itemCount += 1
             if itemCount == testCount:

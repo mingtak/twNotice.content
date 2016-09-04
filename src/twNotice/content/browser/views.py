@@ -30,7 +30,7 @@ class GetProxies(BrowserView):
         proxies = from_cn_proxy() + from_cyber_syndrome() + from_free_proxy_list() + \
                   from_gather_proxy() + from_get_proxy() + from_hide_my_ip() + \
                   from_pachong_org() + from_proxy_spy() + from_xici_daili()
-        usable = test_proxies(proxies, timeout=6, single_url=testURL)
+        usable = test_proxies(proxies, timeout=2, single_url=testURL)
         with open('/tmp/proxies', 'w') as file:
             pickle.dump(usable, file)
 

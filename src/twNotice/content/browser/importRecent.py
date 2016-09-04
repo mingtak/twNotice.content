@@ -39,6 +39,7 @@ class BaseMethod():
     def getProxies(self):
         with open('/tmp/proxies') as file:
             usable = pickle.load(file)
+            random.shuffle(usable)
         return usable
 
 
@@ -94,7 +95,7 @@ class BaseMethod():
         if type(proxies) != type([]):
             proxies = [proxies]
 
-        timeout = 8 if len(proxies)>1 else 20
+        timeout = 3 if len(proxies)>1 else 3
         for item in proxies:
             logger.info('PROXY: %s' % item)
             proxy = urllib2.ProxyHandler({'http': item})
@@ -246,14 +247,16 @@ class GetPage(BrowserView, BaseMethod):
         self.getPage(url=noticeURL, id=id, proxies=proxy)
         logger.info('url: %s get完成' % noticeURL)
 
+        """ 改不在這裏新增
         if os.path.exists('/tmp/%s' % id):
             logger.info('url: %s 新增開始' % noticeURL)
             with api.env.adopt_roles(['Manager']):
                 container = self.getFolder(ds=ds, container=portal[folder])
                 self.createContents([id], container, ds)
-                transaction.commit()
                 logger.info('新增完成，請檢查: %s, %s, %s / %s' % (folder, ds, id, noticeURL))
-
+        else:
+            logger.info('沒這個id: %s' % id)
+        """
 
 class ImportRecent(BrowserView, BaseMethod):
     """ Import Recent
@@ -301,15 +304,14 @@ class ImportRecent(BrowserView, BaseMethod):
                 continue
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
 
-            proxy = proxies.pop(0)
-            proxies.append(proxy)
-
+            proxy = random.choice(proxies)
             noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
-            os.system('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s" &' % \
+            os.popen('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s"' % \
                 (portal.absolute_url(), id, ds, proxy, folder, noticeURL))
             logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
+
             #TODO 休息多久，可以區分尖峰時間
-            time.sleep(3)
+#            time.sleep(10)
 
         logger.info('%s 完成!' % ds)
 #        self.reportResult(ds, container)
