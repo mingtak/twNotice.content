@@ -19,6 +19,8 @@ from freeproxy import *
 import logging
 
 
+logger = logging.getLogger("twNotice.content-VIEWS")
+
 class GetProxies(BrowserView):
     """ Get Proxies
     """
@@ -26,13 +28,18 @@ class GetProxies(BrowserView):
         context = self.context
         request = self.request
 
+        start = DateTime()
         testURL = 'http://web.pcc.gov.tw/tps/tpam/main/tps/tpam/tpam_tender_detail.do?searchMode=common&scope=F&primaryKey=62081538&area=history'
         proxies = from_cn_proxy() + from_cyber_syndrome() + from_free_proxy_list() + \
                   from_gather_proxy() + from_get_proxy() + from_hide_my_ip() + \
                   from_pachong_org() + from_proxy_spy() + from_xici_daili()
-        usable = test_proxies(proxies, timeout=2, single_url=testURL)
+        usable = test_proxies(proxies, timeout=3, single_url=testURL)
         with open('/tmp/proxies', 'w') as file:
             pickle.dump(usable, file)
+        end = DateTime()
+        result = '可用 proxies: %s, 開始: %s, 結束: %s' % (len(usable), start.strftime('%c'), end.strftime('%c'))
+        logger.info(result)
+        return result
 
 
 class BidderInfo(BrowserView):

@@ -89,8 +89,8 @@ class ImportNotice(BrowserView, BaseMethod):
             if 'twjavascript' in noticeURL:
                 continue
 
-            if api.content.find(context=portal['notice'][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
-                continue
+#            if api.content.find(context=portal['notice'][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
+#                continue
 
             id = '%s%s' % (DateTime().strftime('%Y%m%d%H%M%S'), random.randint(100000,999999))
 
@@ -104,14 +104,18 @@ class ImportNotice(BrowserView, BaseMethod):
                '&fn=FAS' in noticeURL or \
                '&fn=FAR' in noticeURL:
                 logger.info('非標案公告不處理 %s' % noticeURL)
-                continue # 網址太短表示有問題，不浪費時間
+                continue # 非標案公告，不浪費時間
+
+            if api.content.find(context=portal['notice'][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
+                continue
 
             proxy = random.choice(proxies)
 
             noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
-            os.popen('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=notice&noticeURL=%s"' % \
+            logger.info('發出前, %s' % noticeURL.replace('ZZZZZZZ', '&'))
+            os.popen('curl -m 60 "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=notice&noticeURL=%s"' % \
                 (portal.absolute_url(), id, ds, proxy, noticeURL))
-            logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
+            logger.info('發出後, %s' % noticeURL.replace('ZZZZZZZ', '&'))
             #TODO 休息多久，可以區分尖峰時間
 #            time.sleep(30)
 
