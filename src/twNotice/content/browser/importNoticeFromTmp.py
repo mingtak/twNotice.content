@@ -59,6 +59,7 @@ class ImportNoticeFromTmp(BrowserView):
 
         logger.info('新增開始')
 
+        addedCount = 0
         while True:
             files = os.popen('ls /tmp/twNotice*').read()
             if not files:
@@ -118,6 +119,14 @@ class ImportNoticeFromTmp(BrowserView):
                 except:
                     logger.error('line 79')
                     pass
-                logger.info('新增完成 %s-%s' % (ds, filename))
-                transaction.commit()
-                os.remove(filename)
+
+                addedCount += 1
+                logger.info('新增完成, %s, %s-%s' % (addedCount, ds, filename))
+                try:
+                    transaction.commit()
+                    os.remove(filename)
+                except:
+                    try:
+                        os.remove(filename)
+                    except:pass
+                    continue
