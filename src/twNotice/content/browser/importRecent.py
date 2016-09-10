@@ -221,8 +221,11 @@ class BaseMethod():
 
         with open('/tmp/twNotice%s' % id, 'w') as file:
             pickle.dump(notice, file)
-        os.system('scp /tmp/twNotice%s playgroup@www.opptoday.com:/tmp/' % id)
-        os.remove('/tmp/twNotice%s' % id)
+
+        if os.popen('hostname').read().startswith('plone'):
+            os.system('scp /tmp/twNotice%s playgroup@www.opptoday.com:/tmp/' % id)
+            os.remove('/tmp/twNotice%s' % id)
+#        time.sleep(1)
         return
 
 
@@ -242,6 +245,7 @@ class GetPage(BrowserView, BaseMethod):
         folder = request.form.get('folder')
         id = request.form.get('id')
         ds = request.form.get('ds')
+        logger.info('line 246')
         if noticeURL and proxy and folder and id and ds:
             pass
         else:
@@ -251,16 +255,6 @@ class GetPage(BrowserView, BaseMethod):
         self.getPage(url=noticeURL, id=id, proxies=proxy, folder=folder, ds=ds)
         logger.info('url: %s get完成' % noticeURL)
 
-        """ 改不在這裏新增
-        if os.path.exists('/tmp/%s' % id):
-            logger.info('url: %s 新增開始' % noticeURL)
-            with api.env.adopt_roles(['Manager']):
-                container = self.getFolder(ds=ds, container=portal[folder])
-                self.createContents([id], container, ds)
-                logger.info('新增完成，請檢查: %s, %s, %s / %s' % (folder, ds, id, noticeURL))
-        else:
-            logger.info('沒這個id: %s' % id)
-        """
 
 class ImportRecent(BrowserView, BaseMethod):
     """ Import Recent
@@ -310,7 +304,7 @@ class ImportRecent(BrowserView, BaseMethod):
 
             proxy = random.choice(proxies)
             noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
-            os.system('curl "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s"' % \
+            os.system('curl -m 60 "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s"' % \
                 (portal.absolute_url(), id, ds, proxy, folder, noticeURL))
             logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))
 
