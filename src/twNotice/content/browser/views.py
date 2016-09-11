@@ -204,8 +204,20 @@ class ContentAmount(BrowserView):
         result = ''
         for year in noticeFolder.getChildNodes():  # year
             for month in year.getChildNodes():  # month
-#                import pdb; pdb.set_trace()
-                result += '%s/%s: %s\n' % (year.id, month.id, month.objectCount())
+                for day in month.getChildNodes():
+#                brain = api.content.find(context=month, Type="Notice")
+#                result += '%s/%s: %s\n' % (year.id, month.id, len(brain))
+                    result += '%s/%s/%s: %s\n' % (year.id, month.id, day.id, day.objectCount())
+
+        result += '\n\n===============================================================\n\n'
+
+        for year in noticeFolder.getChildNodes():  # year
+            for month in year.getChildNodes():  # month
+                brain = api.content.find(context=month, Type="Notice")
+                result += '%s/%s: %s\n' % (year.id, month.id, len(brain))
+#                result += '%s/%s/%s: %s\n' % (year.id, month.id, day.id, day.objectCount())
+
+
         return result
 
 
