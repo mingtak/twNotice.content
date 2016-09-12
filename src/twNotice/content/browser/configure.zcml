@@ -266,6 +266,13 @@
       />
 
   <browser:page
+      name="remove_surplus"
+      for="*"
+      class=".views.RemoveSurplus"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
       name="testzzz"
       for="*"
       class=".views.TestZZZ"

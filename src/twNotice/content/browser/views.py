@@ -225,6 +225,35 @@ class ContentAmount(BrowserView):
         return result
 
 
+class RemoveSurplus(BrowserView):
+    """ Remove Surplus """
+
+    def removeSurplus(self, container):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+
+        brain = list(api.content.find(context=container, Type='Notice', sort_on='noticeURL'))
+        while len(brain) > 1:
+            if brain[0].noticeURL == brain[1].noticeURL:
+                logger.info('Is same notice, %s || %s' % (brain[0].getURL(), brain[1].getURL()))
+                logger.info('Remove, %s' % brain[0].getURL())
+                api.content.delete(obj=brain[0].getObject())
+            brain.pop(0)
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        portal = api.portal.get()
+        alsoProvides(request, IDisableCSRFProtection)
+
+        noticeFolder = portal['notice']
+        recentFolder = portal['recent']
+
+        self.removeSurplus(noticeFolder)
+        self.removeSurplus(recentFolder)
+
+
 class TestZZZ(BrowserView):
     """ TestZZZ
     """
