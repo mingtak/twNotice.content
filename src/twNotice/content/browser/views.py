@@ -203,9 +203,9 @@ class ContentAmount(BrowserView):
         today = DateTime()
         result = ''
         while True:
-            year = str(today.year())
-            month = str(today.month())
-            day = str(today.day())
+            year = today.strftime('%Y')
+            month = today.strftime('%m')
+            day = today.strftime('%d')
             ds = today.strftime('%Y%m%d')
             if noticeFolder.has_key(year) and noticeFolder[year].has_key(month) and noticeFolder[year][month].has_key(day):
                 result += '%s: %s\n' % (ds, noticeFolder[year][month][day].objectCount())
@@ -221,7 +221,6 @@ class ContentAmount(BrowserView):
             for month in year.getChildNodes():  # month
                 brain = api.content.find(context=month, Type="Notice")
                 result += '%s/%s: %s\n' % (year.id, month.id, len(brain))
-
         return result
 
 
