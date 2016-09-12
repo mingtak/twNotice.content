@@ -199,15 +199,21 @@ class ContentAmount(BrowserView):
         alsoProvides(request, IDisableCSRFProtection)
 
         noticeFolder = portal['notice']
-#        catalog = context.portal_catalog
 
+        today = DateTime()
         result = ''
-        for year in noticeFolder.getChildNodes():  # year
-            for month in year.getChildNodes():  # month
-                for day in month.getChildNodes():
-#                brain = api.content.find(context=month, Type="Notice")
-#                result += '%s/%s: %s\n' % (year.id, month.id, len(brain))
-                    result += '%s/%s/%s: %s\n' % (year.id, month.id, day.id, day.objectCount())
+        while True:
+            year = str(today.year())
+            month = str(today.month())
+            day = str(today.day())
+            ds = today.strftime('%Y%m%d')
+            if noticeFolder.has_key(year) and noticeFolder[year].has_key(month) and noticeFolder[year][month].has_key(day):
+                result += '%s: %s\n' % (ds, noticeFolder[year][month][day].objectCount())
+            else:
+                result += '%s: 0\n' % ds
+            today -= 1
+            if today.year() < 2010:
+                break
 
         result += '\n\n===============================================================\n\n'
 
@@ -215,8 +221,6 @@ class ContentAmount(BrowserView):
             for month in year.getChildNodes():  # month
                 brain = api.content.find(context=month, Type="Notice")
                 result += '%s/%s: %s\n' % (year.id, month.id, len(brain))
-#                result += '%s/%s/%s: %s\n' % (year.id, month.id, day.id, day.objectCount())
-
 
         return result
 
