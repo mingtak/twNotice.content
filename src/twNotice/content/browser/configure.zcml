@@ -100,22 +100,6 @@
       permission="zope2.View"
       />
 
-  <!-- Billing -->
-  <browser:page
-      name="invoice_method"
-      for="*"
-      class=".bill.InvoiceMethod"
-      template="template/invoice_method.pt"
-      permission="zope2.View"
-      />
-
-  <browser:page
-      name="checkout"
-      for="*"
-      class=".bill.Checkout"
-      permission="zope2.View"
-      />
-
   <!-- contents type view -->
   <browser:page
       name="profile_view"
