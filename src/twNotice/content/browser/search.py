@@ -27,15 +27,19 @@ class SearchResult(BrowserView):
 
         org_name = request.form.get('org_name')
         pccOrgCode_set = []
-        orgSet = catalog(Title=org_name, Type='Organization')
-        if orgSet:
-            for org in orgSet[0:10]:
-                pccOrgCode_set.append(org.pccOrgCode)
-            if pccOrgCode_set:
-                queryString['pccOrgCode'] = pccOrgCode_set
+
+        if org_name and len(safe_unicode(org_name)) >= 3: ###
+            orgSet = catalog(Title=org_name, Type='Organization')
+            if orgSet:
+                for org in orgSet:
+                    pccOrgCode_set.append(org.pccOrgCode)
+                if pccOrgCode_set:
+                    queryString['pccOrgCode'] = pccOrgCode_set
 
         keyword = request.form.get('keyword')
-        queryString['Title'] = keyword
+        if keyword:
+            queryString['Title'] = keyword
+
         max_budget = 0 if not request.form.get('max_budget', ' ').isdigit() else int(request.form.get('max_budget'))
         min_budget = 0 if not request.form.get('min_budget', ' ').isdigit() else int(request.form.get('min_budget'))
         if min_budget or max_budget:
@@ -48,15 +52,15 @@ class SearchResult(BrowserView):
 
         date_range = request.form.get('date_range')
         if date_range == '3days':
-            endDate = DateTime() - 3
+            startDate = DateTime() - 3
         elif date_range == 'week':
-            endDate = DateTime() - 7
+            startDate = DateTime() - 7
         elif date_range == 'month':
-            endDate = DateTime() - 30
+            startDate = DateTime() - 30
         else:
-            endDate = DateTime() - 1
+            startDate = DateTime() - 1
 
-        queryString['created'] = {'query':(DateTime(), endDate), 'range': 'min:max'}
+        queryString['created'] = {'query':(startDate, DateTime()), 'range': 'min:max'}
 
         self.brain = catalog(queryString, sort_on='created', sort_order='reverse')
 
