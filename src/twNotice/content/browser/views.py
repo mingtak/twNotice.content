@@ -15,11 +15,33 @@ from plone.protect.interfaces import IDisableCSRFProtection
 from zope.interface import alsoProvides
 #import json
 import pickle
+from zope.event import notify
+from zope.lifecycleevent import ObjectModifiedEvent
 from freeproxy import *
 import logging
 
 
 logger = logging.getLogger("twNotice.content-VIEWS")
+
+class UpdateES(BrowserView):
+    """ Update ES
+    """
+
+    def __call__(self):
+        context = self.context
+        request = self.request
+        catalog = context.portal_catalog
+        portal = api.portal.get()
+        alsoProvides(request, IDisableCSRFProtection)
+
+        brain = catalog(modified={'query':DateTime(2016, 9, 25), 'range':'max'}, sort_on='modified')
+        count = 1
+        for item in brain[0:1000]:
+            notify(ObjectModifiedEvent(item.getObject()))
+            logger.info('Finish: %s, %s' % (count, item.getURL()))
+            count += 1
+        logger.info('Contents Amount: %s' % len(brain))
+
 
 class GetProxies(BrowserView):
     """ Get Proxies

@@ -257,6 +257,13 @@
       />
 
   <browser:page
+      name="updateES"
+      for="*"
+      class=".views.UpdateES"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
       name="testzzz"
       for="*"
       class=".views.TestZZZ"
