@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from Products.Five.browser import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
@@ -20,15 +21,13 @@ class SearchResult(BrowserView):
 
         queryString={'Type':'Notice'}
 
-        path = ''
-        for item in container.getPhysicalPath():
-            path += '/%s' % item
+        path = '/'.join(container.getPhysicalPath())
         queryString['path'] = path
 
         org_name = request.form.get('org_name')
         pccOrgCode_set = []
 
-        if org_name and len(safe_unicode(org_name)) >= 3: ###
+        if org_name: # and len(safe_unicode(org_name)) >= 3: ###
             orgSet = catalog(Title=org_name, Type='Organization')
             if orgSet:
                 for org in orgSet:
@@ -36,9 +35,9 @@ class SearchResult(BrowserView):
                 if pccOrgCode_set:
                     queryString['pccOrgCode'] = pccOrgCode_set
 
-        keyword = request.form.get('keyword')
-        if keyword:
-            queryString['Title'] = keyword
+        queryString['Title'] = request.form.get('keyword')
+        if not queryString['Title']:
+            queryString['Title'] = '採購'
 
         max_budget = 0 if not request.form.get('max_budget', ' ').isdigit() else int(request.form.get('max_budget'))
         min_budget = 0 if not request.form.get('min_budget', ' ').isdigit() else int(request.form.get('min_budget'))
@@ -60,9 +59,17 @@ class SearchResult(BrowserView):
         else:
             startDate = DateTime() - 1
 
-        queryString['created'] = {'query':(startDate, DateTime()), 'range': 'min:max'}
+        queryString['created'] = {'query':(startDate), 'range': 'min'}
 
-        self.brain = catalog(queryString, sort_on='created', sort_order='reverse')
+        self.brain = catalog(
+            Title=queryString.get('Title'),
+            pccOrgCode=queryString.get('pccOrgCode'),
+            budget=queryString.get('budget'),
+            created=queryString['created'],
+            path=queryString['path'],
+            sort_on='created',
+            sort_order='reverse',
+        )
 
         return self.template()
 
