@@ -4,6 +4,7 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 #from zope.component import getMultiAdapter
 from plone import api
 from DateTime import DateTime
+import time
 import transaction
 from Products.CMFPlone.utils import safe_unicode
 from Acquisition import aq_inner
@@ -34,13 +35,19 @@ class UpdateES(BrowserView):
         portal = api.portal.get()
         alsoProvides(request, IDisableCSRFProtection)
 
-        brain = catalog(modified={'query':DateTime(2016, 9, 25), 'range':'max'}, sort_on='modified')
+        logger.info('HOUR: %s' % DateTime().hour())
+        if DateTime().hour() in [1, 2, 3]:
+            time.sleep(60)
+            return None
+#        brain = catalog(modified={'query':DateTime(2016, 9, 25, 19), 'range':'max'}, sort_on='modified')
+        brain = catalog(sort_on='modified')
         count = 1
-        for item in brain[0:1000]:
+        for item in brain[0:10000]:
             notify(ObjectModifiedEvent(item.getObject()))
-            logger.info('Finish: %s, %s' % (count, item.getURL()))
+            if not (count % 10):
+                transaction.commit()
+                logger.info('Contents Amount: %s' % count)
             count += 1
-        logger.info('Contents Amount: %s' % len(brain))
 
 
 class GetProxies(BrowserView):
