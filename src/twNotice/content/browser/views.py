@@ -36,11 +36,7 @@ class UpdateES(BrowserView):
         alsoProvides(request, IDisableCSRFProtection)
 
         logger.info('HOUR: %s' % DateTime().hour())
-        if DateTime().hour() in [1, 2, 3]:
-            time.sleep(60)
-            return None
-#        brain = catalog(modified={'query':DateTime(2016, 9, 25, 19), 'range':'max'}, sort_on='modified')
-        brain = catalog(sort_on='modified')
+        brain = catalog(modified={'query':DateTime(2016, 9, 25, 19), 'range':'max'}, sort_on='modified')
         count = 1
         for item in brain[0:10000]:
             notify(ObjectModifiedEvent(item.getObject()))
