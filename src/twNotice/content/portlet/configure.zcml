@@ -1,0 +1,14 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:browser="http://namespaces.zope.org/browser"
+           xmlns:plone="http://namespaces.plone.org/plone">
+
+    <plone:portlet
+        name="twNotice.content.portlets.Scriptbox"
+        interface=".scriptbox.IScriptbox"
+        assignment=".scriptbox.Assignment"
+        renderer=".scriptbox.Renderer"
+        addview=".scriptbox.AddForm"
+        editview=".scriptbox.EditForm"
+        />
+
+</configure>

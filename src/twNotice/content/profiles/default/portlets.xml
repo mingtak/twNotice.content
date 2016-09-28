@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<portlets
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+  i18n:domain="twNotice.content">
+
+  <!-- Portlet type registrations -->
+
+  <portlet
+    addview="twNotice.content.portlets.Scriptbox"
+    title="Scriptbox portlet"
+    description="A portlet to rendering script tag content."
+    i18n:attributes="title;
+                    description"
+    />
+
+</portlets>
+
