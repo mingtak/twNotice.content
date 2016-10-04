@@ -1,6 +1,3 @@
-# --- PLEASE EDIT THE LINES BELOW CORRECTLY ---
-# SOME DESCRIPTIVE TITLE.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -15,85 +12,85 @@ msgstr ""
 "Language-Code: en\n"
 "Language-Name: English\n"
 "Preferred-Encodings: utf-8 latin1\n"
-"Domain: twNotice.content\n"
+"Domain: DOMAIN\n"
 
 #: ./profiles/default/portlets.xml
 msgid "A portlet to rendering script tag content."
-msgstr ""
+msgstr "自定義 html, 支援 <script>, 不支援 tal."
 
 #: ./browser/template/id_login.pt:31
 msgid "Account ID"
-msgstr ""
+msgstr "帳號"
 
 #: ./portlet/scriptbox.py:43
 msgid "Add Scriptbox Portlet"
-msgstr ""
+msgstr "新增 Scriptbox Portlet"
 
 #: ./interfaces.py:138
 msgid "Address"
-msgstr ""
+msgstr "地址"
 
 #: ./interfaces.py:269
 msgid "Bonus"
-msgstr ""
+msgstr "紅利點數"
 
 #: ./interfaces.py:41
 #: ./profiles/default/types/CPC.xml
 msgid "CPC"
-msgstr ""
+msgstr "採購分類(CPC)"
 
 #: ./interfaces.py:42
 msgid "CPC Code"
-msgstr ""
+msgstr "採購分類(CPC)碼"
 
 #: ./interfaces.py:209
 msgid "Cell Phone"
-msgstr ""
+msgstr "手機"
 
 #: ./interfaces.py:210
 msgid "Cell Phone number."
-msgstr ""
+msgstr "手機號碼"
 
 #: ./interfaces.py:118
 msgid "Children CPC"
-msgstr ""
+msgstr "採購子分類"
 
 #: ./interfaces.py:221
 msgid "City"
-msgstr ""
+msgstr "縣市"
 
 #: ./interfaces.py:222
 msgid "City name."
-msgstr ""
+msgstr "縣市名稱"
 
 #: ./browser/siteSetting.py:20
 msgid "Contact Email"
-msgstr ""
+msgstr "聯絡Email"
 
 #: ./browser/siteSetting.py:25
 msgid "Contact Phone"
-msgstr ""
+msgstr "聯絡電話"
 
 #: ./profiles/default/types/Cover.xml
 msgid "Cover"
-msgstr ""
+msgstr "封面"
 
 #: ./browser/template/notice_view.pt:20
 #: ./interfaces.py:67
 msgid "Date String"
-msgstr ""
+msgstr "日期字串"
 
 #: ./interfaces.py:62
 msgid "Description"
-msgstr ""
+msgstr "描述"
 
 #: ./interfaces.py:227
 msgid "District"
-msgstr ""
+msgstr "鄉鎮市區"
 
 #: ./portlet/scriptbox.py:54
 msgid "Edit Scriptbox Portlet"
-msgstr ""
+msgstr "編輯 Scriptbox Portlet"
 
 #: ./interfaces.py:215
 msgid "Email"
@@ -105,23 +102,23 @@ msgstr ""
 
 #: ./interfaces.py:108
 msgid "English Title"
-msgstr ""
+msgstr "英文標題"
 
 #: ./browser/siteSetting.py:30
 msgid "Footer Information, support html tag"
-msgstr ""
+msgstr "頁腳資訊, 支援 html 格式"
 
 #: ./interfaces.py:26
 msgid "Heros URL"
-msgstr ""
+msgstr "Hero 網址"
 
 #: ./interfaces.py:47
 msgid "Hot News"
-msgstr ""
+msgstr "熱門消息"
 
 #: ./interfaces.py:48
 msgid "Hot news for home page"
-msgstr ""
+msgstr "首頁熱門消息"
 
 #: ./configure.zcml:22
 msgid "Installs the twNotice.content add-on."
@@ -129,118 +126,118 @@ msgstr ""
 
 #: ./interfaces.py:198
 msgid "Keyword"
-msgstr ""
+msgstr "關鍵字"
 
 #: ./browser/template/id_login.pt:41
 msgid "Login"
-msgstr ""
+msgstr "登入"
 
 #: ./browser/template/organization_view.pt:38
 #: ./interfaces.py:152
 msgid "New Organization"
-msgstr ""
+msgstr "新機關"
 
 #: ./profiles/default/types/Notice.xml
 msgid "Notice"
-msgstr ""
+msgstr "標案公告"
 
 #: ./interfaces.py:113
 msgid "Notice Category"
-msgstr ""
+msgstr "標案公告分類"
 
 #: ./browser/template/notice_view.pt:43
 #: ./interfaces.py:88
 msgid "Notice Metadata"
-msgstr ""
+msgstr "標案公告 Metadata"
 
 #: ./interfaces.py:203
 msgid "Notice Trace Code"
-msgstr ""
+msgstr "標案公告追蹤碼"
 
 #: ./browser/template/notice_view.pt:31
 #: ./interfaces.py:78
 msgid "Notice Type"
-msgstr ""
+msgstr "標案公告型別(Type)"
 
 #: ./browser/template/notice_view.pt:36
 #: ./interfaces.py:83
 msgid "Notice URL"
-msgstr ""
+msgstr "公告來源網址"
 
 #: ./browser/template/organization_view.pt:32
 #: ./interfaces.py:158
 msgid "Old Organization"
-msgstr ""
+msgstr "原機關"
 
 #: ./profiles/default/types/Organization.xml
 msgid "Organization"
-msgstr ""
+msgstr "機關"
 
 #: ./interfaces.py:143
 msgid "Organization Code"
-msgstr ""
+msgstr "機關代碼"
 
 #: ./interfaces.py:148
 msgid "PCC Organization Code"
-msgstr ""
+msgstr "工程會機關代碼"
 
 #: ./interfaces.py:277
 msgid "Paid Period"
-msgstr ""
+msgstr "付費期間"
 
 #: ./browser/template/organization_view.pt:26
 #: ./interfaces.py:164
 msgid "Parent Organization"
-msgstr ""
+msgstr "上層機關"
 
 #: ./browser/template/id_login.pt:36
 msgid "Password"
-msgstr ""
+msgstr "密碼"
 
 #: ./interfaces.py:191
 msgid "Phone"
-msgstr ""
+msgstr "電話"
 
 #: ./interfaces.py:192
 msgid "Phone Number."
-msgstr ""
+msgstr "電話號碼"
 
 #: ./browser/template/id_login.pt:32
 msgid "Please input ID"
-msgstr ""
+msgstr "請輸入帳號"
 
 #: ./browser/template/id_login.pt:37
 msgid "Please input password"
-msgstr ""
+msgstr "請輸入密碼"
 
 #: ./profiles/default/types/Profile.xml
 msgid "Profile"
-msgstr ""
+msgstr "個人檔案"
 
 #: ./interfaces.py:181
 msgid "Profile Name"
-msgstr ""
+msgstr "個人檔案姓名"
 
 #: ./browser/siteSetting.py:35
 msgid "R Report folder Path at filesystem."
-msgstr ""
+msgstr "R 報告資料夾(伺服器位置)"
 
 #: ./interfaces.py:49
 msgid "Related"
-msgstr ""
+msgstr "關聯項目"
 
 #: ./browser/template/notice_view.pt:25
 #: ./interfaces.py:72
 msgid "Related CPC"
-msgstr ""
+msgstr "關聯的採購類別"
 
 #: ./browser/template/cpc_view.pt:32
 msgid "Relation Notice"
-msgstr ""
+msgstr "相關標案公告"
 
 #: ./interfaces.py:171
 msgid "Report"
-msgstr ""
+msgstr "報告"
 
 #: ./portlet/scriptbox.py:14
 msgid "Script"
@@ -256,11 +253,11 @@ msgstr ""
 
 #: ./browser/siteSetting.py:45
 msgid "Site Setting"
-msgstr ""
+msgstr "網站自定義設定"
 
 #: ./profiles/default/controlpanel.xml
 msgid "Site setup"
-msgstr ""
+msgstr "網站自定義設定"
 
 #: ./portlet/scriptbox.py:44
 msgid "This portlet rendering Scriptbox."
@@ -268,15 +265,15 @@ msgstr ""
 
 #: ./interfaces.py:21
 msgid "Title"
-msgstr ""
+msgstr "標題"
 
 #: ./interfaces.py:197
 msgid "Trace Keywords"
-msgstr ""
+msgstr "追蹤關鍵字"
 
 #: ./interfaces.py:27
 msgid "URL"
-msgstr ""
+msgstr "網址"
 
 #: ./configure.zcml:37
 msgid "Uninstalls the twNotice.content add-on."
@@ -288,11 +285,11 @@ msgstr ""
 
 #: ./interfaces.py:233
 msgid "ZIP Code"
-msgstr ""
+msgstr "郵遞區號"
 
 #: ./interfaces.py:234
 msgid "ZIP code"
-msgstr ""
+msgstr "郵遞區號"
 
 #: ./config.py:9
 msgid "asset"
