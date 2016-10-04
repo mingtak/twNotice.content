@@ -49,7 +49,6 @@ class SendNotice(BaseMethod):
         end = DateTime() + 0.1 # If we have some clock skew peek a little to the future
         start = DateTime() - 0.6
         created_date_range = {'query':(start,end), 'range':'min:max'}
-
         for profile in profiles:
             if not profile.traceKeywords:
                 continue
@@ -75,14 +74,14 @@ class SendNotice(BaseMethod):
                     brain.remove(brain[0])
 
             count = 0
-            html = '<strong>目前共有 %s 筆符合的公告</strong>' % len(result)
+            html = '<strong>目前共有 %s 筆符合的公告，您目前的追蹤關鍵字:</strong><p>%s</p>' % (len(result), ' / '.join(profile.traceKeywords).encode('utf-8'))
             for item in result:
                 html += '<li><a href=%s>%s</a></li>' % (item.getURL(), item.Title)
                 count += 1
 
                 show = 100 if api.group.get(groupname='paid') in api.group.get_groups(username=profile.id) else 10
                 if count >= show:
-                    html += '<a href=%s/@@today_notice>更多符合的公告內容，請上網查看</a>' % portal.absolute_url()
+                    html += '<p><a href=%s/@@today_notice>更多符合的公告內容，請上網查看</a></p>' % portal.absolute_url()
                     break
 
             mimeBody = MIMEText('%s' % html, 'html', 'utf-8')
