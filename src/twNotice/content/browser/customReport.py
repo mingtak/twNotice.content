@@ -109,18 +109,30 @@ class TodayNotice(BaseMethod):
             # TODO:不是redirect，是要求登入
             response.redirect(portal.absolute_url())
             return
-        profile = portal['members'][currentId]
+        self.profile = portal['members'][currentId]
 
         end = DateTime() + 0.1 # If we have some clock skew peek a little to the future
         start = DateTime() - 1
         created_date_range = {'query':(start,end), 'range':'min:max'}
 
-        if not profile.traceKeywords:
-            # TODO
+        traceKeywords = self.profile.traceKeywords
+        if not traceKeywords:
+            response.redirect('%s/account_info' % portal.absolute_url())
             return
 
-        brain = api.content.find(context=portal['recent'],
-            created=created_date_range,
-            Title=profile.traceKeywords,
-            sort_on='pccOrgCode')
 
+        self.result = []
+        noticeURLs = []
+        for keyword in traceKeywords:
+            brain = list(api.content.find(context=portal['recent'],
+                created=created_date_range,
+                Title=keyword,
+                sort_on='pccOrgCode'))
+            while brain:
+                if brain[0].noticeURL in noticeURLs:
+                    brain.remove(brain[0])
+                    continue
+                self.result.append(brain[0])
+                noticeURLs.append(brain[0].noticeURL)
+                brain.remove(brain[0])
+        return self.index()

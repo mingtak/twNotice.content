@@ -28,7 +28,7 @@ class BaseMethod(BrowserView):
 
     def myProfile(self):
         portal = api.portal.get()
-        reqeust = self.request
+        request = self.request
 
         try:
             return portal['members'][api.user.get_current().id]
