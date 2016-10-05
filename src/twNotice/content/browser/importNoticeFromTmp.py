@@ -59,6 +59,7 @@ class ImportNoticeFromTmp(BrowserView):
 
         logger.info('新增開始')
 
+        isRecent = request.form.get('isRecent')
         addedCount = 0
         while True:
             files = os.popen('ls /tmp/twNotice*').read()
@@ -75,6 +76,9 @@ class ImportNoticeFromTmp(BrowserView):
 
                 ds=notice['dateString']
                 folder = notice['folder']
+                if isRecent == 't' and folder != 'recent':
+                    continue
+
                 container = portal[folder]
                 container = self.getFolder(container=container, ds=ds)
 
@@ -130,3 +134,7 @@ class ImportNoticeFromTmp(BrowserView):
                         os.remove(filename)
                     except:pass
                     continue
+
+            if isRecent == 't':
+                break
+
