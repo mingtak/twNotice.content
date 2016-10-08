@@ -77,9 +77,13 @@ class UpdateAccountInfo(BaseMethod):
             return
 
         profile.traceKeywords = []
-        for keyword in keywords:
-            if keyword.strip():
-                profile.traceKeywords.append(keyword)
+
+        if type(keywords) == type(''):
+            profile.traceKeywords.append(keywords)
+        else:
+            for keyword in keywords:
+                if keyword.strip():
+                    profile.traceKeywords.append(keyword)
         return
 
 
@@ -92,10 +96,10 @@ class UpdateAccountInfo(BaseMethod):
         currentId = self.currentId()
         profile = portal['members'][currentId]
 
-        if request.form.has_key('keyword'):
+        if request.form.has_key('modkeyword'):
             self.update_keyword(profile, request)
-        elif request.form.has_key('phone'):
-            self.update_basic(profile,request)
+        elif request.form.has_key('modbasic'):
+            self.update_basic(profile, request)
 
         request.response.redirect('%s/@@account_info' % portal.absolute_url())
 
