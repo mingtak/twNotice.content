@@ -69,6 +69,8 @@ class UpdateAccountInfo(BaseMethod):
 
 
     def update_keyword(self, profile, request):
+        profile.subscribe = request.form.get('subscribe', False)
+
         keywords = request.form.get('keyword')
         if not keywords:
             profile.traceKeywords = None

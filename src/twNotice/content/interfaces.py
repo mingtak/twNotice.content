@@ -193,6 +193,12 @@ class IProfile(Interface):
         required=False,
     )
 
+    subscribe = schema.Bool(
+        title=_(u"Subscribe"),
+        description=_(u"Subscribe daily notice and newsletter"),
+        default=False,
+    )
+
     traceKeywords = schema.List(
         title=_(u"Trace Keywords"),
         value_type = schema.TextLine(title=_(u"Keyword"),),
