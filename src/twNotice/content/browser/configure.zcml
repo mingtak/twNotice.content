@@ -264,6 +264,20 @@
       />
 
   <browser:page
+      name="sitemapforgoogleatopptoday_1"
+      for="*"
+      class=".sitemap.SiteMap1"
+      permission="zope2.View"
+      />
+
+  <browser:page
+      name="sitemapforgoogleatopptoday_2"
+      for="*"
+      class=".sitemap.SiteMap2"
+      permission="zope2.View"
+      />
+
+  <browser:page
       name="testzzz"
       for="*"
       class=".views.TestZZZ"

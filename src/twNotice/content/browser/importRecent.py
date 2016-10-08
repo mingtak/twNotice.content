@@ -96,6 +96,7 @@ class BaseMethod():
             proxies = [proxies]
 
         timeout = 3 if len(proxies)>1 else 3
+        random.shuffle(proxies)
         for item in proxies:
             logger.info('PROXY: %s' % item)
             proxy = urllib2.ProxyHandler({'http': item})
@@ -261,6 +262,7 @@ class ImportRecent(BrowserView, BaseMethod):
     """
 
     def importNotice(self, link, ds):
+        logger.info('importNotice start')
         context = self.context
         request = self.request
         response = request.response
@@ -268,26 +270,30 @@ class ImportRecent(BrowserView, BaseMethod):
         portal = api.portal.get()
         intIds = component.getUtility(IIntIds)
 
+        logger.info('getproxies start')
         while True:
             proxies = self.getProxies()
             if proxies:
                 break
-
+        logger.info('get proxies end')
         folder = 'recent'
         # 先確認folder
         container = self.getFolder(ds=ds, container=portal[folder])
         # 取得公告首頁
         try:
             url = link
-            htmlDoc = self.getList(url=url, proxies=proxies)
+            while True:
+                htmlDoc = self.getList(url=url, proxies=proxies)
+                soup = BeautifulSoup(htmlDoc, 'lxml')
+                if len(soup.find_all('a')) > 20:
+                    break
         except:
             logger.error('第 184 行')
             self.sendErrLog(3, url)
 #            logger.error("網站無回應或被擋了 %s" % url)
             return
 
-        soup = BeautifulSoup(htmlDoc, 'lxml')
-
+        logger.info('soup, %s' % len(soup.find_all('a')))
         for item in soup.find_all('a'):
             if 'detail' not in item.get('href', ''):
                 continue
@@ -296,7 +302,6 @@ class ImportRecent(BrowserView, BaseMethod):
             noticeURL = "http://web.pcc.gov.tw%s" % url
 
             logger.info('==> %s' % noticeURL)
-
             if api.content.find(context=portal[folder][ds[0:4]][ds[4:6]][ds[6:]], noticeURL=noticeURL):
                 logger.info('有了 %s' % noticeURL)
                 continue
@@ -304,6 +309,8 @@ class ImportRecent(BrowserView, BaseMethod):
 
             proxy = random.choice(proxies)
             noticeURL = noticeURL.replace('&', 'ZZZZZZZ') # 先把 & 替代掉，傳過去之後再換回來
+            logger.info('curl -m 60 "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s"' % \
+                (portal.absolute_url(), id, ds, proxy, folder, noticeURL))
             os.system('curl -m 60 "%s/@@get_page?id=%s&ds=%s&proxy=%s&folder=%s&noticeURL=%s"' % \
                 (portal.absolute_url(), id, ds, proxy, folder, noticeURL))
             logger.info('發出, %s' % noticeURL.replace('ZZZZZZZ', '&'))

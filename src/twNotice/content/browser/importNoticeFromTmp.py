@@ -136,5 +136,6 @@ class ImportNoticeFromTmp(BrowserView):
                     continue
 
             if isRecent == 't':
+                logger.info('結束了')
                 break
 

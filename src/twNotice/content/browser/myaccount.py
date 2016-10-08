@@ -44,6 +44,11 @@ class AccountInfo(BaseMethod):
 
     def __call__(self):
         context = self.context
+        request = self.request
+
+        if api.user.is_anonymous():
+            return request.recdirect(context.absolute_url())
+
         return self.template()
 
 
