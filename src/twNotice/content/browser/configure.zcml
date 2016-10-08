@@ -278,6 +278,13 @@
       />
 
   <browser:page
+      name="import_member_from_old_site"
+      for="*"
+      class=".import_member.ImportMember"
+      permission="cmf.ManagePortal"
+      />
+
+  <browser:page
       name="testzzz"
       for="*"
       class=".views.TestZZZ"
