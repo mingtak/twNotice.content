@@ -50,6 +50,8 @@ class SendNotice(BaseMethod):
         start = DateTime() - 0.6
         created_date_range = {'query':(start,end), 'range':'min:max'}
         for profile in profiles:
+            if not profile.subscribe:
+                continue
             if not profile.traceKeywords:
                 continue
 
@@ -87,7 +89,7 @@ class SendNotice(BaseMethod):
             mimeBody = MIMEText('%s' % html, 'html', 'utf-8')
 
             api.portal.send_email(recipient=profile.email,
-                sender='service@mingtak.com.tw',
+                sender='service@opptoday.com',
                 subject=u'%s您好，今日商機王-政府採購公告：%s' % (safe_unicode(profile.title), str(DateTime()).split()[0]),
                 body='%s' % (mimeBody.as_string()))
         return
