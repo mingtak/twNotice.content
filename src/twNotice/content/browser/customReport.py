@@ -7,7 +7,9 @@ import logging
 from Products.CMFPlone.utils import safe_unicode
 from email_validator import validate_email, EmailNotValidError
 from email.mime.text import MIMEText
-
+import transaction
+import time
+from gevent import monkey
 
 logger = logging.getLogger("SendMail")
 
@@ -49,49 +51,68 @@ class SendNotice(BaseMethod):
         end = DateTime() + 0.1 # If we have some clock skew peek a little to the future
         start = DateTime() - 0.6
         created_date_range = {'query':(start,end), 'range':'min:max'}
+
+        errCount = 0
+        sendOkCount = 0
         for profile in profiles:
-            if not profile.subscribe:
-                continue
-            if not profile.traceKeywords:
-                continue
+            try:
+                if not getattr(profile, 'subscribe'):
+                    continue
+                if not getattr(profile, 'traceKeywords'):
+                    continue
 
-            email = self.validateEmail(profile.email)
-            if not email:
-                logger.Error('Invalid Email Address: %s' % profile.email)
-                continue
+                email = self.validateEmail(profile.email)
+                if not email:
+                    logger.error('Invalid Email Address: %s' % profile.email)
+                    continue
 
-            result = []
-            noticeURLs = []
-            for keyword in profile.traceKeywords:
-                brain = list(api.content.find(context=portal['recent'],
-                    created=created_date_range,
-                    Title=keyword,
-                    sort_on='pccOrgCode'))
-                while brain:
-                    if brain[0].noticeURL in noticeURLs:
+                result = []
+                noticeURLs = []
+                for keyword in profile.traceKeywords:
+                    brain = list(api.content.find(context=portal['recent'],
+                        created=created_date_range,
+                        Title=keyword,
+                        sort_on='pccOrgCode'))
+                    while brain:
+                        if brain[0].noticeURL in noticeURLs:
+                            brain.remove(brain[0])
+                            continue
+                        result.append(brain[0])
+                        noticeURLs.append(brain[0].noticeURL)
                         brain.remove(brain[0])
-                        continue
-                    result.append(brain[0])
-                    noticeURLs.append(brain[0].noticeURL)
-                    brain.remove(brain[0])
 
-            count = 0
-            html = '<strong>目前共有 %s 筆符合的公告，您目前的追蹤關鍵字:</strong><p>%s</p>' % (len(result), ' / '.join(profile.traceKeywords).encode('utf-8'))
-            for item in result:
-                html += '<li><a href=%s>%s</a></li>' % (item.getURL(), item.Title)
-                count += 1
+                count = 0
+                try:
+                    html = '<strong>目前共有 %s 筆符合的公告，您目前的追蹤關鍵字:</strong><p>%s</p>' % (len(result), ' / '.join(profile.traceKeywords).encode('utf-8'))
+                except:
+                    html = '<strong>目前共有 %s 筆符合的公告，您目前的追蹤關鍵字:</strong><p>%s</p>' % (len(result), ' / '.join(profile.traceKeywords))
 
-                show = 100 if api.group.get(groupname='paid') in api.group.get_groups(username=profile.id) else 10
-                if count >= show:
-                    html += '<p><a href=%s/@@today_notice>更多符合的公告內容，請上網查看</a></p>' % portal.absolute_url()
-                    break
+                for item in result:
+                    html += '<li><a href=%s>%s</a></li>' % (item.getURL(), item.Title)
+                    count += 1
 
-            mimeBody = MIMEText('%s' % html, 'html', 'utf-8')
+                    show = 100 if api.group.get(groupname='paid') in api.group.get_groups(username=profile.id) else 10
+                    if count >= show:
+                        html += '<p><a href=%s/@@today_notice>更多符合的公告內容，請上網查看</a></p>' % portal.absolute_url()
+                        break
 
-            api.portal.send_email(recipient=profile.email,
-                sender='service@opptoday.com',
-                subject=u'%s您好，今日商機王-政府採購公告：%s' % (safe_unicode(profile.title), str(DateTime()).split()[0]),
-                body='%s' % (mimeBody.as_string()))
+                mimeBody = MIMEText('%s' % html, 'html', 'utf-8')
+                # monkey patch for ssl
+                monkey.patch_socket()
+                monkey.patch_ssl()
+
+                api.portal.send_email(recipient=profile.email,
+                    sender='service@opptoday.com',
+                    subject=u'%s您好，今日商機王-政府採購公告：%s' % (safe_unicode(profile.title), str(DateTime()).split()[0]),
+                    body='%s' % (mimeBody.as_string()))
+                transaction.commit()
+
+                sendOkCount += 1
+                logger.info('Send 完成, %s, %s' % (sendOkCount, profile.id))
+            except:
+                errCount +=1
+                logger.error('寄送錯誤, errCount=%s, %s' % (errCount, profile.id))
+                continue
         return
 
 
@@ -121,7 +142,6 @@ class TodayNotice(BaseMethod):
         if not traceKeywords:
             response.redirect('%s/account_info' % portal.absolute_url())
             return
-
 
         self.result = []
         noticeURLs = []

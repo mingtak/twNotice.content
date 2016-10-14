@@ -290,6 +290,9 @@ class TestZZZ(BrowserView):
 
         catalog = context.portal_catalog
 
+        import pdb; pdb.set_trace()
+        return
+
         brain = catalog(Type=['CPC', 'Notice', 'Organization'], review_state='private')
         pubCount = 0
 
