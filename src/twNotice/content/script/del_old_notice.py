@@ -42,16 +42,13 @@ class DelOldNotice:
         self.portal.setupCurrentSkin(self.portal.REQUEST)
 
     def del_old_notice(self):
-        if DateTime().hour() in [7,8,9,10,12,14,16,18,20,22]:
-            return
-
         historyFolder = '/home/playgroup/HistoryNotice'
         brain = api.content.find(Type='Notice', context=self.portal['notice'])
 
         delCount = 0
         for item in brain:
-            if DateTime().hour() in [7,8,9,10,12,14,16,18,20,22]:
-                break
+#            if DateTime().hour() in [7,8,9,10,12,14,16,18,20,22]:
+#                break
 
             try:
                 filename = filter(str.isalnum, item.noticeURL)
@@ -93,7 +90,8 @@ class DelOldNotice:
                         print delCount
                         transaction.commit()
                 except:
-                    import pdb; pdb.set_trace()
+                    pass
+#                    import pdb; pdb.set_trace()
             except:pass
 
 
